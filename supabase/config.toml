@@ -1,0 +1,7 @@
+project_id = "yecfogakgyszdkipzelm"
+
+[functions.avaliar-redacao]
+verify_jwt = false
+
+[functions.chat-aprovia]
+verify_jwt = false
