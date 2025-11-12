@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { PenTool, Sparkles } from "lucide-react";
+import { PenTool, Sparkles, CheckCircle2, AlertCircle, TrendingUp, Award } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Progress } from "@/components/ui/progress";
 
 const temas = [
   "Desafios da educação no Brasil",
@@ -14,6 +15,14 @@ const temas = [
   "Desigualdade social e políticas públicas",
   "Impactos das redes sociais na juventude",
   "Inteligência Artificial e o futuro do trabalho",
+];
+
+const competencias = [
+  { nome: "Domínio da norma culta", descricao: "Modalidade escrita formal da língua portuguesa" },
+  { nome: "Compreensão da proposta", descricao: "Aplicar conceitos de várias áreas" },
+  { nome: "Argumentação", descricao: "Selecionar e organizar informações" },
+  { nome: "Coesão textual", descricao: "Mecanismos linguísticos" },
+  { nome: "Proposta de intervenção", descricao: "Solução respeitando direitos humanos" },
 ];
 
 export default function Redacao() {
@@ -69,109 +78,201 @@ export default function Redacao() {
     }
   };
 
+  const notaPercentual = resultado ? (resultado.nota / 1000) * 100 : 0;
+  const getNotaColor = (nota: number) => {
+    if (nota >= 900) return "text-green-600 dark:text-green-400";
+    if (nota >= 700) return "text-blue-600 dark:text-blue-400";
+    if (nota >= 500) return "text-yellow-600 dark:text-yellow-400";
+    return "text-orange-600 dark:text-orange-400";
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <PenTool className="h-8 w-8 text-primary" />
-          <h1 className="text-4xl font-bold">Pratique sua Redação ENEM</h1>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <div className="p-3 rounded-full bg-primary/10">
+              <PenTool className="h-8 w-8 text-primary" />
+            </div>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold mb-3">Pratique sua Redação ENEM</h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Escreva uma redação e receba nota e feedback baseados nos critérios oficiais do ENEM
+          </p>
         </div>
-        <p className="text-muted-foreground">
-          Escreva uma redação e receba nota e feedback baseados nos critérios do ENEM
-        </p>
-      </div>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Escreva sua Redação</CardTitle>
-          <CardDescription>
-            Escolha um tema e desenvolva uma redação dissertativa-argumentativa
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="tema">Tema da Redação</Label>
-            <Select value={tema} onValueChange={setTema}>
-              <SelectTrigger id="tema">
-                <SelectValue placeholder="Selecione um tema" />
-              </SelectTrigger>
-              <SelectContent>
-                {temas.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Left Column - Form */}
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-2xl">Escreva sua Redação</CardTitle>
+                <CardDescription>
+                  Escolha um tema e desenvolva uma redação dissertativa-argumentativa
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <Label htmlFor="tema" className="text-base font-semibold mb-2 block">
+                    Tema da Redação
+                  </Label>
+                  <Select value={tema} onValueChange={setTema}>
+                    <SelectTrigger id="tema" className="h-12">
+                      <SelectValue placeholder="Selecione um tema" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {temas.map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {t}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-          <div>
-            <Label htmlFor="redacao">Sua Redação (mínimo 7 linhas)</Label>
-            <Textarea
-              id="redacao"
-              placeholder="Digite sua redação completa aqui..."
-              value={redacao}
-              onChange={(e) => setRedacao(e.target.value)}
-              className="min-h-[300px] font-mono"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              {redacao.length} caracteres • {Math.floor(redacao.length / 14)} linhas aproximadas
-            </p>
-          </div>
+                <div>
+                  <Label htmlFor="redacao" className="text-base font-semibold mb-2 block">
+                    Sua Redação (mínimo 7 linhas)
+                  </Label>
+                  <Textarea
+                    id="redacao"
+                    placeholder="Digite sua redação completa aqui. Lembre-se de seguir a estrutura dissertativa-argumentativa: introdução, desenvolvimento e conclusão com proposta de intervenção..."
+                    value={redacao}
+                    onChange={(e) => setRedacao(e.target.value)}
+                    className="min-h-[400px] text-base leading-relaxed"
+                  />
+                  <div className="flex justify-between items-center mt-2">
+                    <p className="text-sm text-muted-foreground">
+                      {redacao.length} caracteres • {Math.floor(redacao.length / 14)} linhas aprox.
+                    </p>
+                    {redacao.length >= 100 && (
+                      <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
+                        <CheckCircle2 className="h-4 w-4" />
+                        Tamanho adequado
+                      </p>
+                    )}
+                  </div>
+                </div>
 
-          <Button onClick={handleSubmit} disabled={loading} className="w-full" size="lg">
-            {loading ? (
-              <>Avaliando...</>
-            ) : (
-              <>
-                <Sparkles className="mr-2 h-5 w-5" />
-                Avaliar Redação
-              </>
+                <Button 
+                  onClick={handleSubmit} 
+                  disabled={loading} 
+                  className="w-full h-14 text-lg font-semibold" 
+                  size="lg"
+                >
+                  {loading ? (
+                    <>
+                      <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                      Avaliando sua redação...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-5 w-5" />
+                      Avaliar Redação com IA
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Results */}
+            {resultado && (
+              <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10">
+                <CardHeader>
+                  <CardTitle className="text-2xl flex items-center gap-2">
+                    <Award className="h-6 w-6 text-primary" />
+                    Resultado da Avaliação
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Nota Final */}
+                  <div className="bg-card rounded-xl p-8 text-center border border-primary/20">
+                    <p className="text-sm text-muted-foreground mb-3 uppercase tracking-wider">
+                      Nota Final
+                    </p>
+                    <p className={`text-6xl md:text-7xl font-bold mb-2 ${getNotaColor(resultado.nota)}`}>
+                      {resultado.nota}
+                    </p>
+                    <p className="text-base text-muted-foreground mb-4">de 1000 pontos</p>
+                    <Progress value={notaPercentual} className="h-3 mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      {notaPercentual.toFixed(1)}% do total
+                    </p>
+                  </div>
+
+                  {/* Feedback */}
+                  <div className="bg-card rounded-xl p-6 border border-primary/20">
+                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-primary" />
+                      Feedback Detalhado
+                    </h3>
+                    <div className="prose prose-sm max-w-none dark:prose-invert">
+                      <div
+                        className="text-muted-foreground leading-relaxed"
+                        dangerouslySetInnerHTML={{
+                          __html: resultado.feedback.replace(/\n/g, "<br/>"),
+                        }}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             )}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {resultado && (
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-          <CardHeader>
-            <CardTitle className="text-2xl">Resultado da Avaliação</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="text-center p-6 bg-card rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2">Nota Final</p>
-              <p className="text-5xl font-bold text-primary">{resultado.nota}</p>
-              <p className="text-sm text-muted-foreground mt-1">de 1000 pontos</p>
-            </div>
-
-            <div className="prose prose-sm max-w-none dark:prose-invert">
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: resultado.feedback.replace(/\n/g, "<br/>"),
-                }}
-              />
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <Card className="mt-6 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-        <CardContent className="p-6">
-          <div className="flex items-start gap-4">
-            <PenTool className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-            <div>
-              <h3 className="font-semibold text-lg mb-2">Lembre-se das 5 Competências</h3>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                <li>1. Domínio da norma culta da língua</li>
-                <li>2. Compreender a proposta e aplicar conceitos</li>
-                <li>3. Selecionar e organizar argumentos</li>
-                <li>4. Demonstrar conhecimento dos mecanismos linguísticos</li>
-                <li>5. Elaborar proposta de intervenção respeitando direitos humanos</li>
-              </ul>
-            </div>
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Right Column - Info */}
+          <div className="space-y-6">
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 sticky top-4">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-primary" />
+                  As 5 Competências do ENEM
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {competencias.map((comp, index) => (
+                  <div key={index} className="bg-card rounded-lg p-4 border border-primary/10">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-sm mb-1">{comp.nome}</h4>
+                        <p className="text-xs text-muted-foreground">{comp.descricao}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card className="border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-lg">Dicas Rápidas</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm text-muted-foreground">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
+                  <p>Use conectivos para dar coesão ao texto</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
+                  <p>Apresente argumentos sólidos e bem fundamentados</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
+                  <p>Proponha solução viável e detalhada</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
+                  <p>Revise ortografia e gramática</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

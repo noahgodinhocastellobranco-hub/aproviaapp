@@ -1,4 +1,4 @@
-import { Home, FileText, BookOpen, PenTool, MessageCircle } from "lucide-react";
+import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -14,7 +14,8 @@ import {
 } from "@/components/ui/sidebar";
 
 const menuItems = [
-  { title: "💡 Dicas", url: "/", icon: Home },
+  { title: "🏠 Início", url: "/", icon: Home },
+  { title: "💡 Dicas", url: "/dicas", icon: Lightbulb },
   { title: "📄 Simulados", url: "/simulados", icon: FileText },
   { title: "📘 Matérias", url: "/materias", icon: BookOpen },
   { title: "📝 Redação", url: "/redacao", icon: PenTool },
