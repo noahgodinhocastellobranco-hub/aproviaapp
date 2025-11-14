@@ -1,5 +1,6 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
+import { PWAInstallPrompt } from "./PWAInstallPrompt";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -9,6 +10,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <main className="flex-1 overflow-auto">
           {children}
         </main>
+        <PWAInstallPrompt />
       </div>
     </SidebarProvider>
   );

@@ -42,26 +42,26 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4">
-      <div className="w-full max-w-md space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4 sm:p-6 md:p-8">
+      <div className="w-full max-w-md space-y-6 md:space-y-8">
         <div className="text-center space-y-2">
           <div className="flex justify-center mb-4">
             <div className="p-3 bg-primary/10 rounded-full">
-              <GraduationCap className="h-12 w-12 text-primary" />
+              <GraduationCap className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-foreground">AprovI.A</h1>
-          <p className="text-muted-foreground">Seu app para mandar bem no ENEM</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground">AprovI.A</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Seu app para mandar bem no ENEM</p>
         </div>
 
         <Card className="border-primary/20 shadow-lg">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Fazer Login</CardTitle>
-            <CardDescription className="text-center">
+          <CardHeader className="space-y-1 pb-4">
+            <CardTitle className="text-xl sm:text-2xl text-center">Fazer Login</CardTitle>
+            <CardDescription className="text-center text-sm">
               Entre com suas credenciais para acessar a plataforma
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pb-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="username">Usuário</Label>
@@ -119,7 +119,7 @@ const Login = () => {
           </CardContent>
         </Card>
 
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-center text-xs sm:text-sm text-muted-foreground px-4">
           Ao fazer login, você concorda com nossos Termos de Uso
         </p>
       </div>

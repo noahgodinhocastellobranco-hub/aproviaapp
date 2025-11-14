@@ -1,6 +1,8 @@
-import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, LogOut } from "lucide-react";
+import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, LogOut, Download } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { Badge } from "@/components/ui/badge";
 import {
   Sidebar,
   SidebarContent,
@@ -27,6 +29,7 @@ export function AppSidebar() {
   const { open } = useSidebar();
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const { isInstallable, isInstalled } = usePWAInstall();
 
   const handleLogout = () => {
     logout();
@@ -79,6 +82,15 @@ export function AppSidebar() {
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
             <SidebarMenu>
+              {isInstallable && !isInstalled && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton onClick={() => navigate('/install')} className="hover:bg-primary/10 text-primary">
+                    <Download className="h-4 w-4" />
+                    <span>Instalar App</span>
+                    {open && <Badge variant="secondary" className="ml-auto text-xs">Novo</Badge>}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
               <SidebarMenuItem>
                 <SidebarMenuButton onClick={handleLogout} className="hover:bg-destructive/10 hover:text-destructive">
                   <LogOut className="h-4 w-4" />
