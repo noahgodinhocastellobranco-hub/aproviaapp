@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Layout } from "./components/Layout";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import Install from "./pages/Install";
 import Dicas from "./pages/Dicas";
 import Simulados from "./pages/Simulados";
 import Materias from "./pages/Materias";
@@ -30,6 +31,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/install" element={<Install />} />
             <Route
               path="/*"
               element={
