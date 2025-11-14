@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  username: string | null;
   login: (username: string, password: string) => boolean;
   logout: () => void;
 }
@@ -65,14 +66,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return localStorage.getItem('aprovia_auth') === 'true';
   });
+  
+  const [username, setUsername] = useState<string | null>(() => {
+    return localStorage.getItem('aprovia_username');
+  });
 
   useEffect(() => {
     localStorage.setItem('aprovia_auth', isAuthenticated ? 'true' : 'false');
-  }, [isAuthenticated]);
+    if (username) {
+      localStorage.setItem('aprovia_username', username);
+    } else {
+      localStorage.removeItem('aprovia_username');
+    }
+  }, [isAuthenticated, username]);
 
   const login = (username: string, password: string): boolean => {
     if (validCredentials[username] === password) {
       setIsAuthenticated(true);
+      setUsername(username);
       return true;
     }
     return false;
@@ -80,11 +91,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     setIsAuthenticated(false);
+    setUsername(null);
     localStorage.removeItem('aprovia_auth');
+    localStorage.removeItem('aprovia_username');
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, username, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
