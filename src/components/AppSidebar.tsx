@@ -63,7 +63,7 @@ export function AppSidebar() {
             <SidebarMenu className="space-y-1 px-2">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild className="text-foreground">
                     <NavLink
                       to={item.url}
                       end={item.url === "/"}
@@ -71,7 +71,7 @@ export function AppSidebar() {
                         `flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${
                           isActive
                             ? "bg-primary text-primary-foreground shadow-sm"
-                            : "hover:bg-muted/80 text-foreground"
+                            : "hover:bg-muted/80"
                         }`
                       }
                     >
