@@ -1,4 +1,4 @@
-import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, LogOut, Download } from "lucide-react";
+import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, LogOut, Download, Camera } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
@@ -26,6 +26,7 @@ const menuItems = [
   { title: "Matérias", url: "/materias", icon: BookOpen },
   { title: "Redação", url: "/redacao", icon: PenTool },
   { title: "Chat AprovI.A", url: "/chat", icon: MessageCircle },
+  { title: "Resolver Questão", url: "/resolver-questao", icon: Camera },
 ];
 
 export function AppSidebar() {
