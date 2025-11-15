@@ -76,7 +76,7 @@ export function AppSidebar() {
                       }
                     >
                       <item.icon className="h-5 w-5 flex-shrink-0" />
-                      <span className="font-medium">{item.title}</span>
+                      <span className="font-medium text-foreground group-data-[collapsible=icon]:inline">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
