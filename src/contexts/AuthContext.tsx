@@ -10,6 +10,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const validCredentials: Record<string, string> = {
+  'noahejoao': '12345',
   'comet-trail': 'G7!fR2kL9qM1',
   'lunar-bridge': 'Vt#4pZ8uQm6s',
   'pixel-harbor': 'xR9$eJ3bT6yW',
