@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { GraduationCap, Lock, User } from 'lucide-react';
+import { Lock, User } from 'lucide-react';
+import logo from '@/assets/logo.png';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -46,12 +47,12 @@ const Login = () => {
       <div className="w-full max-w-md space-y-6 md:space-y-8">
         <div className="text-center space-y-2">
           <div className="flex justify-center mb-4">
-            <div className="p-3 bg-primary/10 rounded-full">
-              <GraduationCap className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
-            </div>
+            <img 
+              src={logo} 
+              alt="AprovI.A" 
+              className="h-24 w-auto sm:h-32 animate-fade-in hover-scale"
+            />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground">AprovI.A</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Seu app para mandar bem no ENEM</p>
         </div>
 
         <Card className="border-primary/20 shadow-lg">

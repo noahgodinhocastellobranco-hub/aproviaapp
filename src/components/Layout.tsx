@@ -4,8 +4,11 @@ import { PWAInstallPrompt } from "./PWAInstallPrompt";
 import { PWAUpdatePrompt } from "./PWAUpdatePrompt";
 import { PWAOfflineIndicator } from "./PWAOfflineIndicator";
 import { PWAInstallBanner } from "./PWAInstallBanner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth();
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -15,8 +18,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </main>
         <PWAUpdatePrompt />
         <PWAOfflineIndicator />
-        <PWAInstallPrompt />
-        <PWAInstallBanner />
+        {isAuthenticated && (
+          <>
+            <PWAInstallPrompt />
+            <PWAInstallBanner />
+          </>
+        )}
       </div>
     </SidebarProvider>
   );
