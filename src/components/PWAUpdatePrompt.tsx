@@ -22,11 +22,14 @@ export const PWAUpdatePrompt = ({ onUpdate }: PWAUpdatePromptProps) => {
             newWorker.addEventListener('statechange', () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                 setWaitingWorker(newWorker);
-                setShowUpdate(true);
-                toast({
-                  title: "Atualização disponível",
-                  description: "Uma nova versão do app está pronta para ser instalada.",
-                });
+                // Automatically update after 3 seconds
+                setTimeout(() => {
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                  toast({
+                    title: "Atualizando...",
+                    description: "O app será atualizado automaticamente.",
+                  });
+                }, 3000);
               }
             });
           }
@@ -35,7 +38,14 @@ export const PWAUpdatePrompt = ({ onUpdate }: PWAUpdatePromptProps) => {
         // Check if there's already a waiting worker
         if (registration.waiting) {
           setWaitingWorker(registration.waiting);
-          setShowUpdate(true);
+          // Automatically update after 3 seconds
+          setTimeout(() => {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            toast({
+              title: "Atualizando...",
+              description: "O app será atualizado automaticamente.",
+            });
+          }, 3000);
         }
       });
 
