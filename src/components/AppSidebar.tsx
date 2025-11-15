@@ -88,18 +88,18 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t p-2">
         <SidebarMenu className="space-y-1">
-          {isInstallable && !isInstalled && (
-            <SidebarMenuItem>
-              <SidebarMenuButton 
-                onClick={() => navigate('/install')} 
-                className="hover:bg-primary/10 text-primary transition-all duration-200 rounded-lg"
-              >
-                <Download className="h-5 w-5 flex-shrink-0" />
-                <span className="font-medium">Instalar App</span>
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              onClick={() => navigate('/install')} 
+              className="hover:bg-primary/10 text-primary transition-all duration-200 rounded-lg"
+            >
+              <Download className="h-5 w-5 flex-shrink-0" />
+              <span className="font-medium">Instalar App</span>
+              {isInstallable && !isInstalled && (
                 <Badge variant="secondary" className="ml-auto text-xs">Novo</Badge>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )}
+              )}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton 
               onClick={handleLogout} 
