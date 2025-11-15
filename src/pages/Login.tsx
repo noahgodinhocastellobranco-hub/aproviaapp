@@ -49,7 +49,7 @@ const Login = () => {
           <img 
             src={logo} 
             alt="AprovI.A" 
-            className="w-full max-w-lg animate-fade-in hover-scale"
+            className="w-full max-w-xs animate-fade-in hover-scale"
           />
         </div>
 
