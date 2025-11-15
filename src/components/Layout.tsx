@@ -32,6 +32,11 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <main className="flex-1 overflow-auto relative">
+          {!open && (
+            <div className="hidden md:block fixed top-4 left-4 z-50">
+              <SidebarTrigger className="bg-background border shadow-md" />
+            </div>
+          )}
           {children}
         </main>
         <PWAUpdatePrompt />
