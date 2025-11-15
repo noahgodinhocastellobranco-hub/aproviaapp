@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { Badge } from "@/components/ui/badge";
 import { PWAStatusBar } from "./PWAStatusBar";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo-main.png";
 import {
   Sidebar,
   SidebarContent,

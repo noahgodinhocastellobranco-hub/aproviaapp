@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Lock, User } from 'lucide-react';
-import logo from '@/assets/logo-full.png';
+import logo from '@/assets/logo-main.png';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -49,7 +49,7 @@ const Login = () => {
           <img 
             src={logo} 
             alt="AprovI.A" 
-            className="w-full max-w-xs animate-fade-in hover-scale"
+            className="w-full max-w-md animate-fade-in hover-scale"
           />
         </div>
 
