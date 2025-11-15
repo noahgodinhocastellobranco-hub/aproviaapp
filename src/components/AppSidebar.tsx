@@ -44,13 +44,14 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="offcanvas" className="border-r">
       <SidebarHeader className="border-b p-4">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex-1">
-            <h2 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent truncate">
               AprovI.A
             </h2>
-            <p className="text-xs text-muted-foreground">Seu assistente de estudos</p>
+            <p className="text-xs text-muted-foreground truncate">Seu assistente de estudos</p>
           </div>
+          <SidebarTrigger className="flex-shrink-0" />
         </div>
         <div className="pt-3">
           <PWAStatusBar />
