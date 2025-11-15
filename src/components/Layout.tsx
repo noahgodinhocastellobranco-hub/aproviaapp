@@ -1,16 +1,34 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { PWAInstallPrompt } from "./PWAInstallPrompt";
 import { PWAUpdatePrompt } from "./PWAUpdatePrompt";
 import { PWAOfflineIndicator } from "./PWAOfflineIndicator";
 import { PWAInstallBanner } from "./PWAInstallBanner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSwipeGesture } from "@/hooks/useSwipeGesture";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-export function Layout({ children }: { children: React.ReactNode }) {
+function LayoutContent({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
+  const { open, setOpen } = useSidebar();
+  const isMobile = useIsMobile();
+
+  useSwipeGesture({
+    onSwipeRight: () => {
+      if (isMobile && !open) {
+        setOpen(true);
+      }
+    },
+    onSwipeLeft: () => {
+      if (isMobile && open) {
+        setOpen(false);
+      }
+    },
+    minSwipeDistance: 80,
+  });
 
   return (
-    <SidebarProvider>
+    <>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <main className="flex-1 overflow-auto relative">
@@ -28,6 +46,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </>
         )}
       </div>
+    </>
+  );
+}
+
+export function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <SidebarProvider>
+      <LayoutContent>{children}</LayoutContent>
     </SidebarProvider>
   );
 }
