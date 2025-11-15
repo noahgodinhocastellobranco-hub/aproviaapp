@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { Badge } from "@/components/ui/badge";
 import { PWAStatusBar } from "./PWAStatusBar";
+import logo from "@/assets/logo.png";
 import {
   Sidebar,
   SidebarContent,
@@ -42,11 +43,8 @@ export function AppSidebar() {
       <div className="p-4 border-b border-border space-y-3">
         <div className="flex items-center gap-2">
           {open && (
-            <div className="flex-1">
-              <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-                AprovI.A
-              </h2>
-              <p className="text-xs text-muted-foreground">Seu app para o ENEM</p>
+            <div className="flex-1 flex items-center gap-2">
+              <img src={logo} alt="AprovI.A" className="h-10 w-auto" />
             </div>
           )}
           <SidebarTrigger className="ml-auto" />
