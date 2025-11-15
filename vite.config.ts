@@ -17,9 +17,9 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['icon-512.png', 'icon-192.png'],
       manifest: {
-        name: 'AprovI.A - Seu app para mandar bem no ENEM',
+        name: 'AprovI.A',
         short_name: 'AprovI.A',
-        description: 'Estude para o ENEM com dicas, simulados oficiais, matérias importantes e correção de redação por IA. Seu assistente completo de estudos.',
+        description: 'Estude para o ENEM com dicas, simulados, matérias e correção de redação por IA.',
         theme_color: '#1E88E5',
         background_color: '#F0F4F8',
         display: 'standalone',
