@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Lock, User } from 'lucide-react';
-import logo from '@/assets/logo.png';
+import logo from '@/assets/logo-full.png';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -45,14 +45,12 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-md space-y-6 md:space-y-8">
-        <div className="text-center space-y-2">
-          <div className="flex justify-center mb-4">
-            <img 
-              src={logo} 
-              alt="AprovI.A" 
-              className="h-24 w-auto sm:h-32 animate-fade-in hover-scale"
-            />
-          </div>
+        <div className="flex justify-center mb-8">
+          <img 
+            src={logo} 
+            alt="AprovI.A" 
+            className="w-full max-w-lg animate-fade-in hover-scale"
+          />
         </div>
 
         <Card className="border-primary/20 shadow-lg">
