@@ -95,7 +95,7 @@ export function AppSidebar() {
               className="hover:bg-primary/10 text-primary transition-all duration-200 rounded-lg"
             >
               <Download className="h-5 w-5 flex-shrink-0" />
-              <span className="font-medium">Instalar App</span>
+              <span className="font-medium text-primary group-data-[collapsible=icon]:inline">Instalar App</span>
               {isInstallable && !isInstalled && (
                 <Badge variant="secondary" className="ml-auto text-xs">Novo</Badge>
               )}
@@ -107,7 +107,7 @@ export function AppSidebar() {
               className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200 rounded-lg"
             >
               <LogOut className="h-5 w-5 flex-shrink-0" />
-              <span className="font-medium">Sair</span>
+              <span className="font-medium text-foreground group-data-[collapsible=icon]:inline">Sair</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
