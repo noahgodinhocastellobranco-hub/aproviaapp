@@ -45,11 +45,11 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-md space-y-6 md:space-y-8">
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center items-center mb-8">
           <img 
             src={logo} 
             alt="AprovI.A" 
-            className="w-full max-w-md animate-fade-in hover-scale"
+            className="w-full max-w-md animate-fade-in hover-scale mx-auto"
           />
         </div>
 
