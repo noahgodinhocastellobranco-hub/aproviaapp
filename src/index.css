@@ -154,4 +154,31 @@ All colors MUST be HSL.
       min-width: 44px;
     }
   }
+  
+  /* Logo animations */
+  @keyframes logo-float {
+    0%, 100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-10px) scale(1.02);
+    }
+  }
+  
+  @keyframes logo-glow {
+    0%, 100% {
+      filter: drop-shadow(0 0 10px rgba(30, 136, 229, 0.3));
+    }
+    50% {
+      filter: drop-shadow(0 0 20px rgba(30, 136, 229, 0.5));
+    }
+  }
+  
+  .hover-scale {
+    transition: transform 0.3s ease;
+  }
+  
+  .hover-scale:hover {
+    animation: logo-float 2s ease-in-out infinite, logo-glow 2s ease-in-out infinite;
+  }
 }
