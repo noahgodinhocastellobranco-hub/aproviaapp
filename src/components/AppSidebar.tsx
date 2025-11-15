@@ -42,7 +42,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="none" className="border-r">
+    <Sidebar collapsible="offcanvas" className="border-r">
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center justify-between gap-2">
           <div className="flex-1">
