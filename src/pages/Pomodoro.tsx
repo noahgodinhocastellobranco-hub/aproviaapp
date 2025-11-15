@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Play, Pause, RotateCcw, Timer, Coffee, Award } from "lucide-react";
@@ -130,8 +129,7 @@ export default function Pomodoro() {
   const progress = ((getModeTime(mode) - timeLeft) / getModeTime(mode)) * 100;
 
   return (
-    <Layout>
-      <div className="container mx-auto p-6 max-w-4xl">
+    <div className="container mx-auto p-6 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             Técnica Pomodoro
@@ -290,7 +288,6 @@ export default function Pomodoro() {
             </CardContent>
           </Card>
         </div>
-      </div>
-    </Layout>
+    </div>
   );
 }
