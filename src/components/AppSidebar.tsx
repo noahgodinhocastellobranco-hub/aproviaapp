@@ -71,7 +71,7 @@ export function AppSidebar() {
                         `flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${
                           isActive
                             ? "bg-primary text-primary-foreground shadow-sm"
-                            : "hover:bg-muted/80"
+                            : "text-foreground hover:bg-muted/80"
                         }`
                       }
                     >
