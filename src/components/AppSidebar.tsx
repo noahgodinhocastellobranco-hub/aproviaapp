@@ -41,34 +41,29 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r">
+    <Sidebar collapsible="none" className="border-r">
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center justify-between gap-2">
-          {open && (
-            <div className="flex-1">
-              <h2 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                AprovI.A
-              </h2>
-              <p className="text-xs text-muted-foreground">Seu assistente de estudos</p>
-            </div>
-          )}
-          <SidebarTrigger />
-        </div>
-        {open && (
-          <div className="pt-3">
-            <PWAStatusBar />
+          <div className="flex-1">
+            <h2 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              AprovI.A
+            </h2>
+            <p className="text-xs text-muted-foreground">Seu assistente de estudos</p>
           </div>
-        )}
+        </div>
+        <div className="pt-3">
+          <PWAStatusBar />
+        </div>
       </SidebarHeader>
 
       <SidebarContent className="py-4">
         <SidebarGroup>
-          {open && <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider">Navegação</SidebarGroupLabel>}
+          <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider">Navegação</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1 px-2">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title}>
+                  <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
                       end={item.url === "/"}
@@ -81,7 +76,7 @@ export function AppSidebar() {
                       }
                     >
                       <item.icon className="h-5 w-5 flex-shrink-0" />
-                      {open && <span className="font-medium">{item.title}</span>}
+                      <span className="font-medium">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -98,15 +93,10 @@ export function AppSidebar() {
               <SidebarMenuButton 
                 onClick={() => navigate('/install')} 
                 className="hover:bg-primary/10 text-primary transition-all duration-200 rounded-lg"
-                tooltip="Instalar App"
               >
                 <Download className="h-5 w-5 flex-shrink-0" />
-                {open && (
-                  <>
-                    <span className="font-medium">Instalar App</span>
-                    <Badge variant="secondary" className="ml-auto text-xs">Novo</Badge>
-                  </>
-                )}
+                <span className="font-medium">Instalar App</span>
+                <Badge variant="secondary" className="ml-auto text-xs">Novo</Badge>
               </SidebarMenuButton>
             </SidebarMenuItem>
           )}
@@ -114,10 +104,9 @@ export function AppSidebar() {
             <SidebarMenuButton 
               onClick={handleLogout} 
               className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200 rounded-lg"
-              tooltip="Sair"
             >
               <LogOut className="h-5 w-5 flex-shrink-0" />
-              {open && <span className="font-medium">Sair</span>}
+              <span className="font-medium">Sair</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
