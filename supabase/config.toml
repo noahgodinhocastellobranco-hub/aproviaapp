@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.chat-aprovia]
 verify_jwt = false
+
+[functions.resolver-questao]
+verify_jwt = false
