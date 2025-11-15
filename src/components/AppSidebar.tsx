@@ -4,7 +4,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { Badge } from "@/components/ui/badge";
 import { PWAStatusBar } from "./PWAStatusBar";
-import logo from "@/assets/logo-main.png";
 import {
   Sidebar,
   SidebarContent,
@@ -16,15 +15,17 @@ import {
   SidebarMenuItem,
   SidebarTrigger,
   useSidebar,
+  SidebarHeader,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
 
 const menuItems = [
-  { title: "🏠 Início", url: "/", icon: Home },
-  { title: "💡 Dicas", url: "/dicas", icon: Lightbulb },
-  { title: "📄 Simulados", url: "/simulados", icon: FileText },
-  { title: "📘 Matérias", url: "/materias", icon: BookOpen },
-  { title: "📝 Redação", url: "/redacao", icon: PenTool },
-  { title: "💬 Chat AprovI.A", url: "/chat", icon: MessageCircle },
+  { title: "Início", url: "/", icon: Home },
+  { title: "Dicas", url: "/dicas", icon: Lightbulb },
+  { title: "Simulados", url: "/simulados", icon: FileText },
+  { title: "Matérias", url: "/materias", icon: BookOpen },
+  { title: "Redação", url: "/redacao", icon: PenTool },
+  { title: "Chat AprovI.A", url: "/chat", icon: MessageCircle },
 ];
 
 export function AppSidebar() {
@@ -39,32 +40,31 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon">
-      <div className="p-4 border-b border-border space-y-3">
-        <div className="flex items-center gap-2 justify-between">
-          {open ? (
-            <div className="flex-1 flex items-center gap-2">
-              <img src={logo} alt="AprovI.A" className="h-10 w-auto" />
-            </div>
-          ) : (
-            <div className="flex items-center justify-center w-full">
-              <img src={logo} alt="AprovI.A" className="h-8 w-auto" />
+    <Sidebar collapsible="icon" className="border-r">
+      <SidebarHeader className="border-b p-4">
+        <div className="flex items-center justify-between gap-2">
+          {open && (
+            <div className="flex-1">
+              <h2 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                AprovI.A
+              </h2>
+              <p className="text-xs text-muted-foreground">Seu assistente de estudos</p>
             </div>
           )}
-          {open && <SidebarTrigger className="ml-auto" />}
+          <SidebarTrigger />
         </div>
         {open && (
-          <div className="pt-2">
+          <div className="pt-3">
             <PWAStatusBar />
           </div>
         )}
-      </div>
+      </SidebarHeader>
 
       <SidebarContent className="py-4">
         <SidebarGroup>
-          {open && <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>}
+          {open && <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider">Navegação</SidebarGroupLabel>}
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="space-y-1 px-2">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title}>
@@ -72,13 +72,15 @@ export function AppSidebar() {
                       to={item.url}
                       end={item.url === "/"}
                       className={({ isActive }) =>
-                        isActive
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200"
-                          : "hover:bg-muted/80 transition-all duration-200"
+                        `flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${
+                          isActive
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "hover:bg-muted/80 text-foreground"
+                        }`
                       }
                     >
-                      <item.icon className={open ? "h-4 w-4" : "h-5 w-5"} />
-                      <span>{item.title}</span>
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      {open && <span className="font-medium">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -86,37 +88,39 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        <SidebarGroup className="mt-auto">
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {isInstallable && !isInstalled && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    onClick={() => navigate('/install')} 
-                    className="hover:bg-primary/10 text-primary transition-all duration-200"
-                    tooltip="Instalar App"
-                  >
-                    <Download className={open ? "h-4 w-4" : "h-5 w-5"} />
-                    <span>Instalar App</span>
-                    {open && <Badge variant="secondary" className="ml-auto text-xs">Novo</Badge>}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  onClick={handleLogout} 
-                  className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200"
-                  tooltip="Sair"
-                >
-                  <LogOut className={open ? "h-4 w-4" : "h-5 w-5"} />
-                  <span>Sair</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="border-t p-2">
+        <SidebarMenu className="space-y-1">
+          {isInstallable && !isInstalled && (
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                onClick={() => navigate('/install')} 
+                className="hover:bg-primary/10 text-primary transition-all duration-200 rounded-lg"
+                tooltip="Instalar App"
+              >
+                <Download className="h-5 w-5 flex-shrink-0" />
+                {open && (
+                  <>
+                    <span className="font-medium">Instalar App</span>
+                    <Badge variant="secondary" className="ml-auto text-xs">Novo</Badge>
+                  </>
+                )}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              onClick={handleLogout} 
+              className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200 rounded-lg"
+              tooltip="Sair"
+            >
+              <LogOut className="h-5 w-5 flex-shrink-0" />
+              {open && <span className="font-medium">Sair</span>}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }
