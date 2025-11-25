@@ -23,49 +23,44 @@ serve(async (req) => {
 GRADE ESPECÍFICA DE CORREÇÃO:
 
 COMPETÊNCIA 1 - Demonstrar domínio da modalidade escrita formal da Língua Portuguesa:
-• 200: Demonstra excelente domínio da modalidade escrita formal da Língua Portuguesa e de escolha de registro. Desvios gramaticais ou de convenções da escrita serão aceitos somente como excepcionalidade e quando não caracterizam reincidências
-• 160: Demonstra bom domínio da modalidade escrita formal da Língua Portuguesa e de escolha de registro, com poucos desvios gramaticais e de convenções da escrita
-• 120: Demonstra domínio mediano da modalidade escrita formal da Língua Portuguesa e de escolha de registro, com alguns desvios gramaticais e de convenções da escrita
-• 80: Demonstra domínio insuficiente da modalidade escrita formal da Língua Portuguesa, com muitos desvios gramaticais, de escolha de registro e de convenções da escrita
-• 40: Demonstra domínio precário da modalidade escrita formal da Língua Portuguesa, de forma sistemática, com diversificados e frequentes desvios gramaticais, de escolha de registro e de convenções da escrita
-• 0: Demonstra desconhecimento da modalidade escrita formal da Língua Portuguesa
+• 200: Excelente domínio da norma culta, sem reincidências de erros
+• 160: Bom domínio, poucos desvios gramaticais
+• 120: Domínio mediano, alguns desvios gramaticais
+• 80: Domínio insuficiente, muitos desvios
+• 40: Domínio precário, erros sistemáticos
+• 0: Desconhecimento da norma culta
 
-COMPETÊNCIA 2 - Compreender a proposta de redação e aplicar conceitos das várias áreas de conhecimento para desenvolver o tema, dentro dos limites estruturais do texto dissertativo-argumentativo em prosa:
-• 200: Desenvolve o tema por meio de argumentação consistente, a partir de um repertório sociocultural produtivo e apresenta excelente domínio do texto dissertativo-argumentativo
-• 160: Desenvolve o tema por meio de argumentação consistente e apresenta bom domínio do texto dissertativo-argumentativo, com proposição, argumentação e conclusão
-• 120: Desenvolve o tema por meio de argumentação previsível e apresenta domínio mediano do texto dissertativo-argumentativo, com proposição, argumentação e conclusão
-• 80: Desenvolve o tema recorrendo à cópia de trechos dos textos motivadores ou apresenta domínio insuficiente do texto dissertativo-argumentativo, não atendendo a estrutura com proposição, argumentação e conclusão
-• 40: Apresenta o assunto, tangenciando o tema, ou demonstra domínio precário do texto dissertativo-argumentativo, com traços constantes de outros tipos textuais
-• 0: Fuga ao tema/não atende à estrutura dissertativo-argumentativa. Nestes casos a redação recebe nota 0 (zero) e é anulada
+COMPETÊNCIA 2 - Compreender a proposta e aplicar conhecimentos:
+• 200: Argumentação consistente com repertório sociocultural produtivo
+• 160: Argumentação consistente, bom domínio dissertativo
+• 120: Argumentação previsível, domínio mediano
+• 80: Cópia dos textos motivadores ou domínio insuficiente
+• 40: Tangencia o tema, domínio precário
+• 0: Fuga ao tema
 
-COMPETÊNCIA 3 - Selecionar, relacionar, organizar e interpretar informações, fatos, opiniões e argumentos em defesa de um ponto de vista:
-• 200: Apresenta informações, fatos e opiniões relacionados ao tema proposto, de forma consistente e organizada, configurando autoria, em defesa de um ponto de vista
-• 160: Apresenta informações, fatos e opiniões relacionados ao tema, de forma organizada, com indícios de autoria, em defesa de um ponto de vista
-• 120: Apresenta informações, fatos e opiniões relacionados ao tema, limitados aos argumentos dos textos motivadores e pouco organizados, em defesa de um ponto de vista
-• 80: Apresenta informações, fatos e opiniões relacionados ao tema, mas desorganizados ou contraditórios e limitados aos argumentos dos textos motivadores, em defesa de um ponto de vista
-• 40: Apresenta informações, fatos e opiniões pouco relacionados ao tema ou incoerentes e sem defesa de um ponto de vista
-• 0: Apresenta informações, fatos e opiniões não relacionados ao tema e sem defesa de um ponto de vista
+COMPETÊNCIA 3 - Selecionar e organizar informações:
+• 200: Informações consistentes e organizadas, com autoria
+• 160: Informações organizadas com indícios de autoria
+• 120: Informações limitadas aos textos motivadores
+• 80: Informações desorganizadas ou contraditórias
+• 40: Informações pouco relacionadas ao tema
+• 0: Informações não relacionadas ao tema
 
-COMPETÊNCIA 4 - Demonstrar conhecimento dos mecanismos linguísticos necessários para a construção da argumentação:
-• 200: Articula bem as partes do texto e apresenta repertório diversificado de recursos coesivos
-• 160: Articula as partes do texto com poucas inadequações e apresenta repertório diversificado de recursos coesivos
-• 120: Articula as partes do texto, de forma mediana, com inadequações, e apresenta repertório pouco diversificado de recursos coesivos
-• 80: Articula as partes do texto, de forma insuficiente, com muitas inadequações e apresenta repertório limitado de recursos coesivos
-• 40: Articula as partes do texto de forma precária
+COMPETÊNCIA 4 - Conhecimento dos mecanismos linguísticos:
+• 200: Articula bem com repertório diversificado de conectivos
+• 160: Articula bem com poucas inadequações
+• 120: Articula de forma mediana com inadequações
+• 80: Articulação insuficiente, muitas inadequações
+• 40: Articulação precária
 • 0: Não articula as informações
 
-COMPETÊNCIA 5 - Elaborar proposta de intervenção para o problema abordado, respeitando os direitos humanos:
-• 200: Elabora muito bem proposta de intervenção, de forma detalhada, relacionada ao tema e articulada à discussão desenvolvida no texto
-• 160: Elabora bem proposta de intervenção relacionada ao tema e articulada à discussão desenvolvida no texto
-• 120: Elabora, de forma mediana, proposta de intervenção relacionada ao tema e articulada à discussão desenvolvida no texto
-• 80: Elabora, de forma insuficiente, proposta de intervenção relacionada ao tema, ou proposta não articulada com a discussão desenvolvida no texto
-• 40: Apresenta proposta de intervenção vaga, precisa ou relacionada apenas ao assunto
-• 0: Não apresenta proposta de intervenção ou apresenta proposta não relacionada ao tema ou ao assunto
-
-Para cada competência, você deve:
-1. Identificar a pontuação exata (0, 40, 80, 120, 160 ou 200)
-2. Explicar por que essa pontuação foi atribuída
-3. Dar exemplos específicos do texto do aluno`;
+COMPETÊNCIA 5 - Elaborar proposta de intervenção:
+• 200: Proposta detalhada, relacionada ao tema e articulada
+• 160: Proposta bem elaborada e articulada
+• 120: Proposta mediana, articulada ao tema
+• 80: Proposta insuficiente ou não articulada
+• 40: Proposta vaga ou precária
+• 0: Sem proposta ou não relacionada ao tema`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -79,7 +74,7 @@ Para cada competência, você deve:
           { role: "system", content: systemPrompt },
           {
             role: "user",
-            content: `Tema: ${tema}\n\nRedação:\n${redacao}\n\nAvalie esta redação conforme os critérios OFICIAIS do ENEM e atribua as notas EXATAS (0, 40, 80, 120, 160 ou 200) para cada competência.`,
+            content: `Tema: ${tema}\n\nRedação:\n${redacao}\n\nAvalie esta redação conforme os critérios OFICIAIS do ENEM e atribua as notas EXATAS (0, 40, 80, 120, 160 ou 200) para cada competência. Seja detalhado e específico nos exemplos.`,
           },
         ],
         tools: [
@@ -94,50 +89,45 @@ Para cada competência, você deve:
                   competencia1: {
                     type: "object",
                     properties: {
-                      nota: { type: "number", enum: [0, 40, 80, 120, 160, 200] },
-                      justificativa: { type: "string" },
-                      exemplos: { type: "string" }
-                    },
-                    required: ["nota", "justificativa", "exemplos"]
+                      nota: { type: "number", description: "Nota de 0, 40, 80, 120, 160 ou 200" },
+                      justificativa: { type: "string", description: "Explicação detalhada da nota" },
+                      exemplos: { type: "string", description: "Exemplos específicos do texto" }
+                    }
                   },
                   competencia2: {
                     type: "object",
                     properties: {
-                      nota: { type: "number", enum: [0, 40, 80, 120, 160, 200] },
-                      justificativa: { type: "string" },
-                      exemplos: { type: "string" }
-                    },
-                    required: ["nota", "justificativa", "exemplos"]
+                      nota: { type: "number", description: "Nota de 0, 40, 80, 120, 160 ou 200" },
+                      justificativa: { type: "string", description: "Explicação detalhada da nota" },
+                      exemplos: { type: "string", description: "Exemplos específicos do texto" }
+                    }
                   },
                   competencia3: {
                     type: "object",
                     properties: {
-                      nota: { type: "number", enum: [0, 40, 80, 120, 160, 200] },
-                      justificativa: { type: "string" },
-                      exemplos: { type: "string" }
-                    },
-                    required: ["nota", "justificativa", "exemplos"]
+                      nota: { type: "number", description: "Nota de 0, 40, 80, 120, 160 ou 200" },
+                      justificativa: { type: "string", description: "Explicação detalhada da nota" },
+                      exemplos: { type: "string", description: "Exemplos específicos do texto" }
+                    }
                   },
                   competencia4: {
                     type: "object",
                     properties: {
-                      nota: { type: "number", enum: [0, 40, 80, 120, 160, 200] },
-                      justificativa: { type: "string" },
-                      exemplos: { type: "string" }
-                    },
-                    required: ["nota", "justificativa", "exemplos"]
+                      nota: { type: "number", description: "Nota de 0, 40, 80, 120, 160 ou 200" },
+                      justificativa: { type: "string", description: "Explicação detalhada da nota" },
+                      exemplos: { type: "string", description: "Exemplos específicos do texto" }
+                    }
                   },
                   competencia5: {
                     type: "object",
                     properties: {
-                      nota: { type: "number", enum: [0, 40, 80, 120, 160, 200] },
-                      justificativa: { type: "string" },
-                      exemplos: { type: "string" }
-                    },
-                    required: ["nota", "justificativa", "exemplos"]
+                      nota: { type: "number", description: "Nota de 0, 40, 80, 120, 160 ou 200" },
+                      justificativa: { type: "string", description: "Explicação detalhada da nota" },
+                      exemplos: { type: "string", description: "Exemplos específicos do texto" }
+                    }
                   },
-                  pontos_fortes: { type: "string" },
-                  pontos_melhoria: { type: "string" }
+                  pontos_fortes: { type: "string", description: "Principais pontos fortes da redação" },
+                  pontos_melhoria: { type: "string", description: "Principais pontos que podem melhorar" }
                 },
                 required: ["competencia1", "competencia2", "competencia3", "competencia4", "competencia5", "pontos_fortes", "pontos_melhoria"]
               }
