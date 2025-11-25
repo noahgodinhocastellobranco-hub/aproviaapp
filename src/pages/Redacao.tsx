@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PenTool, Sparkles, CheckCircle2, AlertCircle, TrendingUp, Award } from "lucide-react";
+import { PenTool, Sparkles, CheckCircle2, AlertCircle, TrendingUp, Award, Target } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 
-const competencias = [
+const competenciasInfo = [
   { nome: "Domínio da norma culta", descricao: "Modalidade escrita formal da língua portuguesa" },
   { nome: "Compreensão da proposta", descricao: "Aplicar conceitos de várias áreas" },
   { nome: "Argumentação", descricao: "Selecionar e organizar informações" },
@@ -17,10 +18,29 @@ const competencias = [
   { nome: "Proposta de intervenção", descricao: "Solução respeitando direitos humanos" },
 ];
 
+interface Competencia {
+  nota: number;
+  justificativa: string;
+  exemplos: string;
+}
+
+interface Resultado {
+  nota: number;
+  competencias: {
+    competencia1: Competencia;
+    competencia2: Competencia;
+    competencia3: Competencia;
+    competencia4: Competencia;
+    competencia5: Competencia;
+  };
+  pontos_fortes: string;
+  pontos_melhoria: string;
+}
+
 export default function Redacao() {
   const [tema, setTema] = useState("");
   const [redacao, setRedacao] = useState("");
-  const [resultado, setResultado] = useState<any>(null);
+  const [resultado, setResultado] = useState<Resultado | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -70,13 +90,21 @@ export default function Redacao() {
     }
   };
 
-  const notaPercentual = resultado ? (resultado.nota / 1000) * 100 : 0;
   const getNotaColor = (nota: number) => {
     if (nota >= 900) return "text-green-600 dark:text-green-400";
     if (nota >= 700) return "text-blue-600 dark:text-blue-400";
     if (nota >= 500) return "text-yellow-600 dark:text-yellow-400";
     return "text-orange-600 dark:text-orange-400";
   };
+
+  const getNotaBadgeColor = (nota: number) => {
+    if (nota >= 160) return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20";
+    if (nota >= 120) return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20";
+    if (nota >= 80) return "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20";
+    return "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20";
+  };
+
+  const notaPercentual = resultado ? (resultado.nota / 1000) * 100 : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -90,7 +118,7 @@ export default function Redacao() {
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-3">Pratique sua Redação ENEM</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Escreva uma redação e receba nota e feedback baseados nos critérios oficiais do ENEM
+            Escreva uma redação e receba nota e feedback baseados nos critérios oficiais do ENEM 2023
           </p>
         </div>
 
@@ -179,7 +207,7 @@ export default function Redacao() {
                     <p className="text-sm text-muted-foreground mb-3 uppercase tracking-wider">
                       Nota Final
                     </p>
-                    <p className={`text-6xl md:text-7xl font-bold mb-2 ${getNotaColor(resultado.nota)}`}>
+                    <p className={`text-7xl md:text-8xl font-bold mb-2 ${getNotaColor(resultado.nota)}`}>
                       {resultado.nota}
                     </p>
                     <p className="text-base text-muted-foreground mb-4">de 1000 pontos</p>
@@ -189,19 +217,61 @@ export default function Redacao() {
                     </p>
                   </div>
 
-                  {/* Feedback */}
+                  {/* Competências Individuais */}
                   <div className="bg-card rounded-xl p-6 border border-primary/20">
                     <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5 text-primary" />
-                      Feedback Detalhado
+                      <Target className="h-5 w-5 text-primary" />
+                      Notas por Competência
                     </h3>
-                    <div className="prose prose-sm max-w-none dark:prose-invert">
-                      <div
-                        className="text-muted-foreground leading-relaxed"
-                        dangerouslySetInnerHTML={{
-                          __html: resultado.feedback.replace(/\n/g, "<br/>"),
-                        }}
-                      />
+                    <div className="space-y-4">
+                      {Object.entries(resultado.competencias).map(([key, comp], index) => (
+                        <div key={key} className="bg-muted/50 rounded-lg p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+                                {index + 1}
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-sm">{competenciasInfo[index].nome}</h4>
+                                <p className="text-xs text-muted-foreground">{competenciasInfo[index].descricao}</p>
+                              </div>
+                            </div>
+                            <Badge className={`text-lg font-bold px-4 py-2 ${getNotaBadgeColor(comp.nota)}`}>
+                              {comp.nota}/200
+                            </Badge>
+                          </div>
+                          <div className="space-y-2">
+                            <div>
+                              <p className="text-xs font-semibold text-muted-foreground mb-1">Justificativa:</p>
+                              <p className="text-sm leading-relaxed">{comp.justificativa}</p>
+                            </div>
+                            {comp.exemplos && (
+                              <div>
+                                <p className="text-xs font-semibold text-muted-foreground mb-1">Exemplos do texto:</p>
+                                <p className="text-sm leading-relaxed text-muted-foreground italic">{comp.exemplos}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Pontos Fortes e Melhoria */}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-green-500/10 rounded-xl p-6 border border-green-500/20">
+                      <h3 className="font-semibold text-lg mb-3 flex items-center gap-2 text-green-600 dark:text-green-400">
+                        <CheckCircle2 className="h-5 w-5" />
+                        Pontos Fortes
+                      </h3>
+                      <p className="text-sm leading-relaxed">{resultado.pontos_fortes}</p>
+                    </div>
+                    <div className="bg-orange-500/10 rounded-xl p-6 border border-orange-500/20">
+                      <h3 className="font-semibold text-lg mb-3 flex items-center gap-2 text-orange-600 dark:text-orange-400">
+                        <TrendingUp className="h-5 w-5" />
+                        Pontos de Melhoria
+                      </h3>
+                      <p className="text-sm leading-relaxed">{resultado.pontos_melhoria}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -219,7 +289,7 @@ export default function Redacao() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {competencias.map((comp, index) => (
+                {competenciasInfo.map((comp, index) => (
                   <div key={index} className="bg-card rounded-lg p-4 border border-primary/10">
                     <div className="flex items-start gap-3">
                       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
@@ -228,6 +298,7 @@ export default function Redacao() {
                       <div>
                         <h4 className="font-semibold text-sm mb-1">{comp.nome}</h4>
                         <p className="text-xs text-muted-foreground">{comp.descricao}</p>
+                        <p className="text-xs text-primary font-semibold mt-2">0-200 pontos</p>
                       </div>
                     </div>
                   </div>
