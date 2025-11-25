@@ -52,7 +52,7 @@ export default function ComoResolverQuestao() {
 
       if (error) throw error;
 
-      setResolucao(data.resolucao);
+      setResolucao(data.solution);
       toast({
         title: "Questão analisada!",
         description: "Confira a explicação detalhada abaixo.",
