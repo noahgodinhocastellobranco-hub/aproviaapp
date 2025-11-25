@@ -1,6 +1,5 @@
-import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, LogOut, Download, Camera, Timer, HelpCircle, ClipboardList } from "lucide-react";
+import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, Download, Camera, Timer, HelpCircle, ClipboardList } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { Badge } from "@/components/ui/badge";
 import { PWAStatusBar } from "./PWAStatusBar";
@@ -33,14 +32,8 @@ const menuItems = [
 
 export function AppSidebar() {
   const { open } = useSidebar();
-  const { logout } = useAuth();
   const navigate = useNavigate();
   const { isInstallable, isInstalled } = usePWAInstall();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
 
   return (
     <Sidebar collapsible="offcanvas" className="border-r">
@@ -101,15 +94,6 @@ export function AppSidebar() {
               {isInstallable && !isInstalled && (
                 <Badge variant="secondary" className="ml-auto text-xs">Novo</Badge>
               )}
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton 
-              onClick={handleLogout} 
-              className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200 rounded-lg"
-            >
-              <LogOut className="h-5 w-5 flex-shrink-0" />
-              <span className="font-medium text-foreground group-data-[collapsible=icon]:inline">Sair</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
