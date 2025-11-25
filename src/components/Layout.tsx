@@ -4,12 +4,10 @@ import { PWAInstallPrompt } from "./PWAInstallPrompt";
 import { PWAUpdatePrompt } from "./PWAUpdatePrompt";
 import { PWAOfflineIndicator } from "./PWAOfflineIndicator";
 import { PWAInstallBanner } from "./PWAInstallBanner";
-import { useAuth } from "@/contexts/AuthContext";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
   const { open, setOpen } = useSidebar();
   const isMobile = useIsMobile();
 
@@ -41,12 +39,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         </main>
         <PWAUpdatePrompt />
         <PWAOfflineIndicator />
-        {isAuthenticated && (
-          <>
-            <PWAInstallPrompt />
-            <PWAInstallBanner />
-          </>
-        )}
+        <PWAInstallPrompt />
+        <PWAInstallBanner />
       </div>
     </>
   );
