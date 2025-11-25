@@ -112,7 +112,7 @@ export default function Redacao() {
                   <Input
                     id="tema"
                     type="text"
-                    placeholder="Digite o tema da sua redação..."
+                    placeholder="Ex: Desafios da educação no Brasil, Sustentabilidade..."
                     value={tema}
                     onChange={(e) => setTema(e.target.value)}
                     className="h-12 text-base"
