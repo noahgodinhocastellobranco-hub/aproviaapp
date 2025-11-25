@@ -1,4 +1,4 @@
-import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, LogOut, Download, Camera, Timer, HelpCircle } from "lucide-react";
+import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, LogOut, Download, Camera, Timer, HelpCircle, ClipboardList } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
@@ -27,6 +27,7 @@ const menuItems = [
   { title: "Redação", url: "/redacao", icon: PenTool },
   { title: "Chat AprovI.A", url: "/chat", icon: MessageCircle },
   { title: "Como resolver questão", url: "/como-resolver-questao", icon: HelpCircle },
+  { title: "Fazendo um simulado", url: "/fazendo-simulado", icon: ClipboardList },
   { title: "Pomodoro", url: "/pomodoro", icon: Timer },
 ];
 
