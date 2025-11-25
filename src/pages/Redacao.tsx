@@ -2,20 +2,12 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PenTool, Sparkles, CheckCircle2, AlertCircle, TrendingUp, Award } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
-
-const temas = [
-  "Desafios da educação no Brasil",
-  "Sustentabilidade e consumo consciente",
-  "Desigualdade social e políticas públicas",
-  "Impactos das redes sociais na juventude",
-  "Inteligência Artificial e o futuro do trabalho",
-];
 
 const competencias = [
   { nome: "Domínio da norma culta", descricao: "Modalidade escrita formal da língua portuguesa" },
@@ -36,7 +28,7 @@ export default function Redacao() {
     if (!tema || !redacao.trim()) {
       toast({
         title: "Campos obrigatórios",
-        description: "Por favor, selecione um tema e escreva sua redação.",
+        description: "Por favor, digite um tema e escreva sua redação.",
         variant: "destructive",
       });
       return;
@@ -109,7 +101,7 @@ export default function Redacao() {
               <CardHeader>
                 <CardTitle className="text-2xl">Escreva sua Redação</CardTitle>
                 <CardDescription>
-                  Escolha um tema e desenvolva uma redação dissertativa-argumentativa
+                  Digite um tema e desenvolva uma redação dissertativa-argumentativa
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -117,18 +109,14 @@ export default function Redacao() {
                   <Label htmlFor="tema" className="text-base font-semibold mb-2 block">
                     Tema da Redação
                   </Label>
-                  <Select value={tema} onValueChange={setTema}>
-                    <SelectTrigger id="tema" className="h-12">
-                      <SelectValue placeholder="Selecione um tema" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {temas.map((t) => (
-                        <SelectItem key={t} value={t}>
-                          {t}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    id="tema"
+                    type="text"
+                    placeholder="Digite o tema da sua redação..."
+                    value={tema}
+                    onChange={(e) => setTema(e.target.value)}
+                    className="h-12 text-base"
+                  />
                 </div>
 
                 <div>
