@@ -10,6 +10,7 @@ import Dicas from "./pages/Dicas";
 import Simulados from "./pages/Simulados";
 import Materias from "./pages/Materias";
 import MateriaisEstudo from "./pages/MateriaisEstudo";
+import BibliotecaEnem from "./pages/BibliotecaEnem";
 import Redacao from "./pages/Redacao";
 import Chat from "./pages/Chat";
 import ResolverQuestao from "./pages/ResolverQuestao";
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/simulados" element={<Simulados />} />
             <Route path="/materias" element={<Materias />} />
             <Route path="/materiais-estudo" element={<MateriaisEstudo />} />
+            <Route path="/biblioteca-enem" element={<BibliotecaEnem />} />
             <Route path="/redacao" element={<Redacao />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/resolver-questao" element={<ResolverQuestao />} />
