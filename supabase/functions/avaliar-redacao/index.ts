@@ -11,11 +11,19 @@ serve(async (req) => {
   }
 
   try {
-    const { tema, redacao } = await req.json();
+    const { tema, redacao, imagem } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY não configurada");
+    }
+
+    if (!tema) {
+      throw new Error("Tema é obrigatório");
+    }
+
+    if (!redacao && !imagem) {
+      throw new Error("Redação ou imagem é obrigatória");
     }
 
     const systemPrompt = `Você é um avaliador OFICIAL de redações do ENEM. Avalie a redação seguindo EXATAMENTE os critérios oficiais do ENEM 2023.
@@ -62,6 +70,31 @@ COMPETÊNCIA 5 - Elaborar proposta de intervenção:
 • 40: Proposta vaga ou precária
 • 0: Sem proposta ou não relacionada ao tema`;
 
+    // Preparar mensagem do usuário
+    let userMessage: any;
+    if (imagem) {
+      userMessage = {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: `Tema: ${tema}\n\nPor favor, leia a redação manuscrita na imagem e avalie conforme os critérios OFICIAIS do ENEM. Atribua as notas EXATAS (0, 40, 80, 120, 160 ou 200) para cada competência. Seja detalhado e específico nos exemplos extraídos do texto.`
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: imagem
+            }
+          }
+        ]
+      };
+    } else {
+      userMessage = {
+        role: "user",
+        content: `Tema: ${tema}\n\nRedação:\n${redacao}\n\nAvalie esta redação conforme os critérios OFICIAIS do ENEM e atribua as notas EXATAS (0, 40, 80, 120, 160 ou 200) para cada competência. Seja detalhado e específico nos exemplos.`
+      };
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -72,10 +105,7 @@ COMPETÊNCIA 5 - Elaborar proposta de intervenção:
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: `Tema: ${tema}\n\nRedação:\n${redacao}\n\nAvalie esta redação conforme os critérios OFICIAIS do ENEM e atribua as notas EXATAS (0, 40, 80, 120, 160 ou 200) para cada competência. Seja detalhado e específico nos exemplos.`,
-          },
+          userMessage,
         ],
         tools: [
           {
