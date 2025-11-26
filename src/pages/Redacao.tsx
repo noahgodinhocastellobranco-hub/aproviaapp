@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PenTool, Sparkles, CheckCircle2, AlertCircle, TrendingUp, Award, Target } from "lucide-react";
+import { PenTool, Sparkles, CheckCircle2, AlertCircle, TrendingUp, Award, Target, Camera, Image as ImageIcon, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const competenciasInfo = [
   { nome: "Domínio da norma culta", descricao: "Modalidade escrita formal da língua portuguesa" },
@@ -40,21 +41,65 @@ interface Resultado {
 export default function Redacao() {
   const [tema, setTema] = useState("");
   const [redacao, setRedacao] = useState("");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [resultado, setResultado] = useState<Resultado | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "Arquivo muito grande",
+          description: "Por favor, selecione uma imagem menor que 10MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result as string);
+        setRedacao(""); // Limpa o texto se houver imagem
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCamera = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.capture = "environment";
+    input.onchange = (e: any) => handleImageSelect(e);
+    input.click();
+  };
+
+  const clearImage = () => {
+    setSelectedImage(null);
+  };
+
   const handleSubmit = async () => {
-    if (!tema || !redacao.trim()) {
+    if (!tema) {
       toast({
-        title: "Campos obrigatórios",
-        description: "Por favor, digite um tema e escreva sua redação.",
+        title: "Tema obrigatório",
+        description: "Por favor, digite o tema da redação.",
         variant: "destructive",
       });
       return;
     }
 
-    if (redacao.trim().length < 100) {
+    if (!selectedImage && !redacao.trim()) {
+      toast({
+        title: "Redação obrigatória",
+        description: "Por favor, escreva sua redação ou tire uma foto.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedImage && redacao.trim().length < 100) {
       toast({
         title: "Redação muito curta",
         description: "Uma redação ENEM deve ter pelo menos 7 linhas (aproximadamente 100 caracteres).",
@@ -67,8 +112,12 @@ export default function Redacao() {
     setResultado(null);
 
     try {
+      const body = selectedImage 
+        ? { tema, imagem: selectedImage }
+        : { tema, redacao };
+
       const { data, error } = await supabase.functions.invoke("avaliar-redacao", {
-        body: { tema, redacao },
+        body,
       });
 
       if (error) throw error;
@@ -147,29 +196,99 @@ export default function Redacao() {
                   />
                 </div>
 
-                <div>
-                  <Label htmlFor="redacao" className="text-base font-semibold mb-2 block">
-                    Sua Redação (mínimo 7 linhas)
-                  </Label>
-                  <Textarea
-                    id="redacao"
-                    placeholder="Digite sua redação completa aqui. Lembre-se de seguir a estrutura dissertativa-argumentativa: introdução, desenvolvimento e conclusão com proposta de intervenção..."
-                    value={redacao}
-                    onChange={(e) => setRedacao(e.target.value)}
-                    className="min-h-[400px] text-base leading-relaxed"
-                  />
-                  <div className="flex justify-between items-center mt-2">
-                    <p className="text-sm text-muted-foreground">
-                      {redacao.length} caracteres • {Math.floor(redacao.length / 14)} linhas aprox.
-                    </p>
-                    {redacao.length >= 100 && (
-                      <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
-                        <CheckCircle2 className="h-4 w-4" />
-                        Tamanho adequado
-                      </p>
+                <Tabs defaultValue="texto" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="texto">Digitar Redação</TabsTrigger>
+                    <TabsTrigger value="foto">Tirar Foto</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="texto" className="space-y-4">
+                    <div>
+                      <Label htmlFor="redacao" className="text-base font-semibold mb-2 block">
+                        Sua Redação (mínimo 7 linhas)
+                      </Label>
+                      <Textarea
+                        id="redacao"
+                        placeholder="Digite sua redação completa aqui. Lembre-se de seguir a estrutura dissertativa-argumentativa: introdução, desenvolvimento e conclusão com proposta de intervenção..."
+                        value={redacao}
+                        onChange={(e) => setRedacao(e.target.value)}
+                        className="min-h-[400px] text-base leading-relaxed"
+                        disabled={!!selectedImage}
+                      />
+                      <div className="flex justify-between items-center mt-2">
+                        <p className="text-sm text-muted-foreground">
+                          {redacao.length} caracteres • {Math.floor(redacao.length / 14)} linhas aprox.
+                        </p>
+                        {redacao.length >= 100 && (
+                          <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
+                            <CheckCircle2 className="h-4 w-4" />
+                            Tamanho adequado
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="foto" className="space-y-4">
+                    {!selectedImage ? (
+                      <div className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                          Tire uma foto da sua redação escrita à mão ou selecione uma imagem da galeria
+                        </p>
+                        <div className="grid grid-cols-2 gap-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-32 flex flex-col gap-2"
+                            onClick={handleCamera}
+                          >
+                            <Camera className="h-8 w-8" />
+                            Tirar Foto
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-32 flex flex-col gap-2"
+                            onClick={() => document.getElementById("image-upload")?.click()}
+                          >
+                            <ImageIcon className="h-8 w-8" />
+                            Selecionar da Galeria
+                          </Button>
+                        </div>
+                        <input
+                          id="image-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageSelect}
+                          className="hidden"
+                        />
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="relative">
+                          <img
+                            src={selectedImage}
+                            alt="Redação"
+                            className="w-full rounded-lg border-2 border-primary/20"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2"
+                            onClick={clearImage}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
+                          <CheckCircle2 className="h-4 w-4" />
+                          Imagem carregada com sucesso
+                        </p>
+                      </div>
                     )}
-                  </div>
-                </div>
+                  </TabsContent>
+                </Tabs>
 
                 <Button 
                   onClick={handleSubmit} 
