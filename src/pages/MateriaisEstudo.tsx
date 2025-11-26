@@ -1,7 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, FileText } from "lucide-react";
-import ProfessoraEnem from "@/components/ProfessoraEnem";
 
 export default function MateriaisEstudo() {
   const handleDownload = () => {
@@ -14,9 +13,9 @@ export default function MateriaisEstudo() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 px-4 py-12">
-      <div className="container max-w-4xl mx-auto space-y-8">
-        <div className="text-center">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center px-4 py-12">
+      <div className="container max-w-2xl">
+        <div className="text-center mb-8">
           <p className="text-primary font-semibold mb-2 text-sm uppercase tracking-wider">
             Materiais gratuitos para você se preparar para o ENEM
           </p>
@@ -56,14 +55,10 @@ export default function MateriaisEstudo() {
           </CardContent>
         </Card>
 
-        <div className="text-center">
+        <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">
             Dica: Imprima e resolva os exercícios para uma melhor fixação do conteúdo!
           </p>
-        </div>
-
-        <div className="border-t border-primary/20 pt-8">
-          <ProfessoraEnem />
         </div>
       </div>
     </div>
