@@ -6,5 +6,11 @@ verify_jwt = false
 [functions.chat-aprovia]
 verify_jwt = false
 
+[functions.professora-enem]
+verify_jwt = false
+
 [functions.resolver-questao]
+verify_jwt = false
+
+[functions.text-to-speech-enem]
 verify_jwt = false
