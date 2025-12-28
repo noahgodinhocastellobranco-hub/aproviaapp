@@ -1,7 +1,5 @@
-import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, Download, Camera, Timer, HelpCircle, ClipboardList, FolderDown, GraduationCap } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { usePWAInstall } from "@/hooks/usePWAInstall";
-import { Badge } from "@/components/ui/badge";
+import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, ExternalLink, Timer, HelpCircle, ClipboardList, FolderDown, GraduationCap } from "lucide-react";
+import { NavLink } from "react-router-dom";
 import { PWAStatusBar } from "./PWAStatusBar";
 import {
   Sidebar,
@@ -34,8 +32,6 @@ const menuItems = [
 
 export function AppSidebar() {
   const { open } = useSidebar();
-  const navigate = useNavigate();
-  const { isInstallable, isInstalled } = usePWAInstall();
 
   return (
     <Sidebar collapsible="offcanvas" className="border-r">
@@ -87,15 +83,16 @@ export function AppSidebar() {
       <SidebarFooter className="border-t p-2">
         <SidebarMenu className="space-y-1">
           <SidebarMenuItem>
-            <SidebarMenuButton 
-              onClick={() => navigate('/install')} 
-              className="hover:bg-primary/10 text-primary transition-all duration-200 rounded-lg"
-            >
-              <Download className="h-5 w-5 flex-shrink-0" />
-              <span className="font-medium text-primary group-data-[collapsible=icon]:inline">Instalar App</span>
-              {isInstallable && !isInstalled && (
-                <Badge variant="secondary" className="ml-auto text-xs">Novo</Badge>
-              )}
+            <SidebarMenuButton asChild className="hover:bg-primary/10 text-primary transition-all duration-200 rounded-lg">
+              <a 
+                href="https://aproviapagina.lovable.app" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-3"
+              >
+                <ExternalLink className="h-5 w-5 flex-shrink-0" />
+                <span className="font-medium text-primary group-data-[collapsible=icon]:inline">Página Inicial</span>
+              </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
