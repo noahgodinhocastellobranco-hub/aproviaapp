@@ -30,9 +30,10 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <main className="flex-1 overflow-auto relative">
-          {!open && (
+          {/* Always show trigger on mobile, or when sidebar is closed on desktop */}
+          {(isMobile || !open) && (
             <div className="fixed top-4 left-4 z-50">
-              <SidebarTrigger className="bg-background border shadow-md" />
+              <SidebarTrigger className="bg-background border shadow-md h-10 w-10" />
             </div>
           )}
           {children}
