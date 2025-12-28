@@ -1,6 +1,7 @@
 import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, ExternalLink, Timer, HelpCircle, ClipboardList, FolderDown, GraduationCap } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { PWAStatusBar } from "./PWAStatusBar";
+import { ThemeToggle } from "./ThemeToggle";
 import {
   Sidebar,
   SidebarContent,
@@ -82,6 +83,9 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t p-2">
         <SidebarMenu className="space-y-1">
+          <SidebarMenuItem>
+            <ThemeToggle />
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="hover:bg-primary/10 text-primary transition-all duration-200 rounded-lg">
               <a 

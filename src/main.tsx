@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import { ThemeProvider } from "next-themes";
 import App from "./App.tsx";
 import "./index.css";
 import { registerSW } from 'virtual:pwa-register';
@@ -45,4 +46,8 @@ window.addEventListener('appinstalled', () => {
   // Track installation analytics here if needed
 });
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <App />
+  </ThemeProvider>
+);
