@@ -106,23 +106,46 @@ export default function ProfessoraVirtual() {
     const cleanText = cleanMarkdown(text);
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = "pt-BR";
-    utterance.rate = 1.0;
-    utterance.pitch = 1.15;
+    utterance.rate = 1.15; // Faster speech
+    utterance.pitch = 1.1; // Slightly higher for feminine voice
     utterance.volume = volume / 100;
 
     const voices = synthRef.current.getVoices();
-    const femaleKeywords = ["female", "feminino", "mulher", "woman", "luciana", "vitoria", "maria", "ana", "francisca", "google"];
     
-    const ptBrFemaleVoice = voices.find(
-      (v) => v.lang === "pt-BR" && femaleKeywords.some(k => v.name.toLowerCase().includes(k))
-    ) || voices.find(
-      (v) => v.lang === "pt-BR"
-    ) || voices.find(
-      (v) => v.lang.startsWith("pt")
-    );
+    // Priority order for best Brazilian Portuguese female voices
+    const voicePriority = [
+      "Google português do Brasil", // Best quality on Chrome
+      "Luciana", // Microsoft Edge
+      "Francisca", // Apple devices
+      "Vitoria", // Some systems
+      "Maria", // Fallback
+      "pt-BR", // Any Portuguese Brazilian
+      "pt", // Any Portuguese
+    ];
 
-    if (ptBrFemaleVoice) {
-      utterance.voice = ptBrFemaleVoice;
+    let selectedVoice = null;
+    
+    // First try to find the best quality voice
+    for (const priority of voicePriority) {
+      const found = voices.find(v => 
+        v.name.toLowerCase().includes(priority.toLowerCase()) &&
+        (v.lang === "pt-BR" || v.lang === "pt_BR" || v.lang.startsWith("pt"))
+      );
+      if (found) {
+        selectedVoice = found;
+        break;
+      }
+    }
+    
+    // If no preferred voice found, get any pt-BR voice
+    if (!selectedVoice) {
+      selectedVoice = voices.find(v => v.lang === "pt-BR" || v.lang === "pt_BR") 
+        || voices.find(v => v.lang.startsWith("pt"));
+    }
+
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+      console.log("Using voice:", selectedVoice.name);
     }
 
     utterance.onstart = () => setIsSpeaking(true);
