@@ -2,13 +2,24 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-import { Send, Mic, MicOff, Volume2, VolumeX, Loader2, Pause, Play } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Send, Mic, MicOff, Volume2, VolumeX, Loader2, Pause, Play, History, Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
+
+interface Conversation {
+  id: string;
+  title: string;
+  messages: Message[];
+  createdAt: number;
+}
+
+const STORAGE_KEY = "professora-virtual-history";
 
 // Remove markdown formatting from text
 const cleanMarkdown = (text: string): string => {
@@ -28,7 +39,20 @@ const cleanMarkdown = (text: string): string => {
     .trim();
 };
 
+const generateId = () => Math.random().toString(36).substring(2, 9);
+
+const getConversationTitle = (messages: Message[]): string => {
+  const firstUserMessage = messages.find(m => m.role === "user");
+  if (firstUserMessage) {
+    const clean = cleanMarkdown(firstUserMessage.content);
+    return clean.length > 40 ? clean.substring(0, 40) + "..." : clean;
+  }
+  return "Nova conversa";
+};
+
 export default function ProfessoraVirtual() {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -37,11 +61,47 @@ export default function ProfessoraVirtual() {
   const [isListening, setIsListening] = useState(false);
   const [volume, setVolume] = useState(80);
   const [isMuted, setIsMuted] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
+
+  // Load conversations from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as Conversation[];
+        setConversations(parsed);
+      }
+    } catch (e) {
+      console.error("Failed to load history:", e);
+    }
+  }, []);
+
+  // Save conversations to localStorage
+  const saveConversations = useCallback((convs: Conversation[]) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(convs));
+      setConversations(convs);
+    } catch (e) {
+      console.error("Failed to save history:", e);
+    }
+  }, []);
+
+  // Save current conversation when messages change
+  useEffect(() => {
+    if (messages.length > 0 && currentConversationId) {
+      const updatedConversations = conversations.map(c => 
+        c.id === currentConversationId 
+          ? { ...c, messages, title: getConversationTitle(messages) }
+          : c
+      );
+      saveConversations(updatedConversations);
+    }
+  }, [messages, currentConversationId]);
 
   // Initialize speech synthesis and load voices
   useEffect(() => {
@@ -106,26 +166,24 @@ export default function ProfessoraVirtual() {
     const cleanText = cleanMarkdown(text);
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = "pt-BR";
-    utterance.rate = 1.15; // Faster speech
-    utterance.pitch = 1.1; // Slightly higher for feminine voice
+    utterance.rate = 1.15;
+    utterance.pitch = 1.1;
     utterance.volume = volume / 100;
 
     const voices = synthRef.current.getVoices();
     
-    // Priority order for best Brazilian Portuguese female voices
     const voicePriority = [
-      "Google português do Brasil", // Best quality on Chrome
-      "Luciana", // Microsoft Edge
-      "Francisca", // Apple devices
-      "Vitoria", // Some systems
-      "Maria", // Fallback
-      "pt-BR", // Any Portuguese Brazilian
-      "pt", // Any Portuguese
+      "Google português do Brasil",
+      "Luciana",
+      "Francisca",
+      "Vitoria",
+      "Maria",
+      "pt-BR",
+      "pt",
     ];
 
     let selectedVoice = null;
     
-    // First try to find the best quality voice
     for (const priority of voicePriority) {
       const found = voices.find(v => 
         v.name.toLowerCase().includes(priority.toLowerCase()) &&
@@ -137,7 +195,6 @@ export default function ProfessoraVirtual() {
       }
     }
     
-    // If no preferred voice found, get any pt-BR voice
     if (!selectedVoice) {
       selectedVoice = voices.find(v => v.lang === "pt-BR" || v.lang === "pt_BR") 
         || voices.find(v => v.lang.startsWith("pt"));
@@ -145,7 +202,6 @@ export default function ProfessoraVirtual() {
 
     if (selectedVoice) {
       utterance.voice = selectedVoice;
-      console.log("Using voice:", selectedVoice.name);
     }
 
     utterance.onstart = () => setIsSpeaking(true);
@@ -204,8 +260,53 @@ export default function ProfessoraVirtual() {
     }
   }, [isListening, stopSpeaking, toast]);
 
+  const startNewConversation = useCallback(() => {
+    stopSpeaking();
+    const newId = generateId();
+    const newConv: Conversation = {
+      id: newId,
+      title: "Nova conversa",
+      messages: [],
+      createdAt: Date.now(),
+    };
+    saveConversations([newConv, ...conversations]);
+    setCurrentConversationId(newId);
+    setMessages([]);
+    setIsHistoryOpen(false);
+  }, [conversations, saveConversations, stopSpeaking]);
+
+  const loadConversation = useCallback((conv: Conversation) => {
+    stopSpeaking();
+    setCurrentConversationId(conv.id);
+    setMessages(conv.messages);
+    setIsHistoryOpen(false);
+  }, [stopSpeaking]);
+
+  const deleteConversation = useCallback((id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = conversations.filter(c => c.id !== id);
+    saveConversations(updated);
+    if (currentConversationId === id) {
+      setCurrentConversationId(null);
+      setMessages([]);
+    }
+  }, [conversations, currentConversationId, saveConversations]);
+
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
+
+    // Create new conversation if none exists
+    if (!currentConversationId) {
+      const newId = generateId();
+      const newConv: Conversation = {
+        id: newId,
+        title: input.trim().substring(0, 40),
+        messages: [],
+        createdAt: Date.now(),
+      };
+      saveConversations([newConv, ...conversations]);
+      setCurrentConversationId(newId);
+    }
 
     const userMessage: Message = { role: "user", content: input.trim() };
     const allMessages = [...messages, userMessage];
@@ -309,9 +410,71 @@ export default function ProfessoraVirtual() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex flex-col items-center justify-between p-4 md:p-8">
       {/* Header */}
-      <div className="text-center pt-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Professora Virtual</h1>
-        <p className="text-sm text-muted-foreground mt-1">Sua ajuda para o ENEM</p>
+      <div className="w-full max-w-md flex items-center justify-between pt-4">
+        <div className="flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Professora Virtual</h1>
+          <p className="text-sm text-muted-foreground mt-1">Sua ajuda para o ENEM</p>
+        </div>
+        
+        <Sheet open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon" className="flex-shrink-0">
+              <History className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle>Histórico de Conversas</SheetTitle>
+            </SheetHeader>
+            <div className="mt-4 space-y-2">
+              <Button 
+                onClick={startNewConversation} 
+                className="w-full"
+                variant="outline"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Nova Conversa
+              </Button>
+              
+              <ScrollArea className="h-[calc(100vh-200px)]">
+                <div className="space-y-2 pr-4">
+                  {conversations.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-8">
+                      Nenhuma conversa ainda
+                    </p>
+                  ) : (
+                    conversations.map((conv) => (
+                      <div
+                        key={conv.id}
+                        onClick={() => loadConversation(conv)}
+                        className={`p-3 rounded-lg cursor-pointer transition-colors flex items-start justify-between gap-2 ${
+                          currentConversationId === conv.id
+                            ? "bg-primary/10 border border-primary/20"
+                            : "bg-muted/50 hover:bg-muted"
+                        }`}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{conv.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(conv.createdAt).toLocaleDateString("pt-BR")}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="flex-shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive"
+                          onClick={(e) => deleteConversation(conv.id, e)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
 
       {/* Main Content - Orb */}
