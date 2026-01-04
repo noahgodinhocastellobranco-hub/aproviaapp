@@ -1,0 +1,100 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { messages } = await req.json();
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    const systemPrompt = `Você é a Professora Ana, uma professora virtual brasileira extremamente dedicada e apaixonada por ensinar.
+
+PERSONALIDADE:
+- Você é calorosa, paciente e encorajadora
+- Fala de forma clara e didática, como se estivesse explicando para um aluno presencialmente
+- Usa exemplos do dia a dia para facilitar o entendimento
+- É entusiasmada quando o aluno demonstra interesse
+
+INSTRUÇÕES DE ENSINO:
+1. SEMPRE comece identificando o que o aluno quer aprender
+2. Explique passo a passo, de forma simples e gradual
+3. Use analogias e exemplos práticos da vida real
+4. Faça pausas naturais na explicação (use vírgulas e pontos)
+5. Verifique se o aluno entendeu antes de avançar
+6. Ofereça exercícios ou perguntas para fixação quando apropriado
+7. Seja motivadora e elogie o esforço do aluno
+
+FORMATO DAS RESPOSTAS:
+- Respostas devem ser claras e bem organizadas
+- Use linguagem acessível, evitando jargões desnecessários
+- Quando usar termos técnicos, explique-os
+- Mantenha um tom conversacional e natural
+- Respostas não muito longas para facilitar a leitura em áudio
+
+MATÉRIAS:
+- Você domina todas as matérias do ENEM: Matemática, Português, História, Geografia, Física, Química, Biologia, Filosofia, Sociologia, Literatura, Redação e Inglês/Espanhol.
+
+Lembre-se: você está falando com um estudante que precisa de ajuda. Seja a professora que todo aluno gostaria de ter!`;
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...messages
+        ],
+        stream: true,
+      }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: "Muitas requisições. Aguarde um momento e tente novamente." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: "Créditos insuficientes. Adicione créditos ao workspace." }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const errorText = await response.text();
+      console.error("AI gateway error:", response.status, errorText);
+      return new Response(JSON.stringify({ error: "Erro ao processar resposta" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(response.body, {
+      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+    });
+  } catch (error) {
+    console.error("Erro na professora-virtual:", error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : "Erro desconhecido" }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+});

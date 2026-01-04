@@ -11,6 +11,7 @@ import Simulados from "./pages/Simulados";
 import Materias from "./pages/Materias";
 import MateriaisEstudo from "./pages/MateriaisEstudo";
 import Redacao from "./pages/Redacao";
+import ProfessoraVirtual from "./pages/ProfessoraVirtual";
 import Chat from "./pages/Chat";
 import ResolverQuestao from "./pages/ResolverQuestao";
 import ComoResolverQuestao from "./pages/ComoResolverQuestao";
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/materias" element={<Materias />} />
             <Route path="/materiais-estudo" element={<MateriaisEstudo />} />
             <Route path="/redacao" element={<Redacao />} />
+            <Route path="/professora-virtual" element={<ProfessoraVirtual />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/resolver-questao" element={<ResolverQuestao />} />
             <Route path="/como-resolver-questao" element={<ComoResolverQuestao />} />
