@@ -2,39 +2,35 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-import { Send, Mic, MicOff, Volume2, VolumeX, Loader2 } from "lucide-react";
+import { Send, Mic, MicOff, Volume2, VolumeX, Loader2, Pause, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import professoraAvatar from "@/assets/professora-avatar.jpeg";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
-// Type for SpeechRecognition
-type SpeechRecognitionType = typeof window extends { SpeechRecognition: infer T } ? T : any;
-
 export default function ProfessoraVirtual() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [volume, setVolume] = useState(80);
   const [isMuted, setIsMuted] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   
-  const synthRef = useRef<SpeechSynthesis | null>(null);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
 
-  // Initialize speech synthesis
+  // Cleanup
   useEffect(() => {
-    synthRef.current = window.speechSynthesis;
-    
     return () => {
-      if (synthRef.current) {
-        synthRef.current.cancel();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
       }
       if (recognitionRef.current) {
         recognitionRef.current.stop();
@@ -52,77 +48,123 @@ export default function ProfessoraVirtual() {
       recognition.interimResults = false;
       recognition.lang = "pt-BR";
 
-      recognition.onresult = (event) => {
+      recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
         setInput(transcript);
         setIsListening(false);
       };
 
-      recognition.onerror = (event) => {
+      recognition.onerror = (event: any) => {
         console.error("Speech recognition error:", event.error);
         setIsListening(false);
         if (event.error !== "aborted") {
           toast({
             title: "Erro no microfone",
-            description: "Não foi possível capturar o áudio. Tente novamente.",
+            description: "Não foi possível capturar o áudio.",
             variant: "destructive",
           });
         }
       };
 
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
+      recognition.onend = () => setIsListening(false);
       recognitionRef.current = recognition;
     }
   }, [toast]);
 
-  const speak = useCallback((text: string) => {
-    if (!synthRef.current || isMuted) return;
+  const speak = useCallback(async (text: string) => {
+    if (isMuted || !text) return;
 
-    // Cancel any ongoing speech
-    synthRef.current.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "pt-BR";
-    utterance.rate = 0.95;
-    utterance.pitch = 1.1;
-    utterance.volume = volume / 100;
-
-    // Find best Brazilian Portuguese female voice
-    const voices = synthRef.current.getVoices();
-    
-    // Priority order for best female voices
-    const femaleKeywords = ["female", "feminino", "mulher", "woman", "luciana", "vitoria", "maria", "ana", "francisca"];
-    
-    const ptBrFemaleVoice = voices.find(
-      (v) => v.lang.includes("pt-BR") && femaleKeywords.some(k => v.name.toLowerCase().includes(k))
-    ) || voices.find(
-      (v) => v.lang === "pt-BR" && !v.name.toLowerCase().includes("male")
-    ) || voices.find(
-      (v) => v.lang.includes("pt-BR")
-    ) || voices.find(
-      (v) => v.lang.includes("pt")
-    );
-
-    if (ptBrFemaleVoice) {
-      utterance.voice = ptBrFemaleVoice;
+    // Stop current audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
     }
 
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
+    setIsLoadingAudio(true);
+    setIsPaused(false);
 
-    utteranceRef.current = utterance;
-    synthRef.current.speak(utterance);
-  }, [volume, isMuted]);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/professora-tts`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ text }),
+        }
+      );
 
-  const stopSpeaking = useCallback(() => {
-    if (synthRef.current) {
-      synthRef.current.cancel();
+      if (!response.ok) {
+        throw new Error("Erro ao gerar áudio");
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      const audio = new Audio(audioUrl);
+      audio.volume = volume / 100;
+      
+      audio.onplay = () => {
+        setIsSpeaking(true);
+        setIsLoadingAudio(false);
+      };
+      
+      audio.onpause = () => {
+        if (!audio.ended) {
+          setIsPaused(true);
+        }
+      };
+      
+      audio.onended = () => {
+        setIsSpeaking(false);
+        setIsPaused(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      audio.onerror = () => {
+        setIsSpeaking(false);
+        setIsLoadingAudio(false);
+        setIsPaused(false);
+      };
+
+      audioRef.current = audio;
+      await audio.play();
+      
+    } catch (error) {
+      console.error("TTS error:", error);
+      setIsLoadingAudio(false);
+      toast({
+        title: "Erro",
+        description: "Não foi possível gerar o áudio.",
+        variant: "destructive",
+      });
+    }
+  }, [volume, isMuted, toast]);
+
+  const togglePause = useCallback(() => {
+    if (!audioRef.current) return;
+    
+    if (isPaused) {
+      audioRef.current.play();
+      setIsPaused(false);
+      setIsSpeaking(true);
+    } else {
+      audioRef.current.pause();
+      setIsPaused(true);
       setIsSpeaking(false);
     }
+  }, [isPaused]);
+
+  const stopSpeaking = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    setIsSpeaking(false);
+    setIsPaused(false);
   }, []);
 
   const toggleListening = useCallback(() => {
@@ -139,7 +181,6 @@ export default function ProfessoraVirtual() {
       recognitionRef.current.stop();
       setIsListening(false);
     } else {
-      // Stop speaking if currently speaking
       stopSpeaking();
       recognitionRef.current.start();
       setIsListening(true);
@@ -248,14 +289,21 @@ export default function ProfessoraVirtual() {
     }
   };
 
+  // Update audio volume when slider changes
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume / 100;
+    }
+  }, [volume]);
+
   const lastMessage = messages[messages.length - 1];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex flex-col items-center justify-between p-4 md:p-8">
       {/* Header */}
       <div className="text-center pt-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Professora Ana</h1>
-        <p className="text-sm text-muted-foreground mt-1">Sua professora virtual do ENEM</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Professora Virtual</h1>
+        <p className="text-sm text-muted-foreground mt-1">Sua ajuda para o ENEM</p>
       </div>
 
       {/* Main Content - Orb */}
@@ -263,7 +311,7 @@ export default function ProfessoraVirtual() {
         {/* Animated Orb */}
         <div className="relative mb-8">
           {/* Outer glow rings */}
-          {isSpeaking && (
+          {(isSpeaking || isLoadingAudio) && (
             <>
               <div className="absolute inset-0 w-48 h-48 md:w-56 md:h-56 rounded-full bg-primary/10 animate-ping" style={{ animationDuration: '2s' }} />
               <div className="absolute inset-0 w-48 h-48 md:w-56 md:h-56 rounded-full bg-primary/20 animate-pulse" />
@@ -283,29 +331,39 @@ export default function ProfessoraVirtual() {
                 ? "bg-gradient-to-br from-primary via-primary/80 to-primary/60 scale-110 shadow-2xl shadow-primary/50" 
                 : isListening
                 ? "bg-gradient-to-br from-red-500 via-red-400 to-red-300 scale-105 shadow-2xl shadow-red-500/50"
-                : isLoading
+                : isLoading || isLoadingAudio
                 ? "bg-gradient-to-br from-muted via-muted/80 to-muted/60 animate-pulse"
+                : isPaused
+                ? "bg-gradient-to-br from-amber-500 via-amber-400 to-amber-300 shadow-xl shadow-amber-500/30"
                 : "bg-gradient-to-br from-primary/80 via-primary/60 to-primary/40 hover:scale-105"
             }`}
           >
-            {/* Inner circle with avatar */}
-            <div className={`w-36 h-36 md:w-44 md:h-44 rounded-full overflow-hidden flex items-center justify-center transition-all duration-300 ${
+            {/* Inner circle */}
+            <div className={`w-36 h-36 md:w-44 md:h-44 rounded-full bg-background/20 backdrop-blur-sm flex items-center justify-center transition-all duration-300 ${
               isSpeaking ? "scale-95" : "scale-100"
             }`}>
-              {isLoading ? (
-                <div className="w-full h-full bg-background/30 flex items-center justify-center">
-                  <Loader2 className="w-12 h-12 text-white animate-spin" />
+              {isLoading || isLoadingAudio ? (
+                <Loader2 className="w-12 h-12 text-white animate-spin" />
+              ) : isSpeaking ? (
+                <div className="flex gap-1.5 items-end">
+                  {[...Array(5)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="w-2.5 bg-white rounded-full"
+                      style={{
+                        height: `${20 + Math.sin(Date.now() / 200 + i) * 20}px`,
+                        animation: `pulse 0.5s ease-in-out infinite`,
+                        animationDelay: `${i * 0.1}s`,
+                      }}
+                    />
+                  ))}
                 </div>
+              ) : isPaused ? (
+                <Play className="w-12 h-12 text-white" />
               ) : isListening ? (
-                <div className="w-full h-full bg-red-500/30 flex items-center justify-center">
-                  <Mic className="w-12 h-12 text-white animate-pulse" />
-                </div>
+                <Mic className="w-12 h-12 text-white animate-pulse" />
               ) : (
-                <img 
-                  src={professoraAvatar} 
-                  alt="Professora Ana" 
-                  className={`w-full h-full object-cover ${isSpeaking ? "animate-pulse" : ""}`}
-                />
+                <div className="w-16 h-16 rounded-full bg-white/30" />
               )}
             </div>
           </div>
@@ -314,21 +372,23 @@ export default function ProfessoraVirtual() {
         {/* Status text */}
         <p className="text-sm text-muted-foreground mb-4 h-5">
           {isLoading && "Pensando..."}
+          {isLoadingAudio && "Gerando áudio..."}
           {isSpeaking && "Falando..."}
+          {isPaused && "Pausado - clique para continuar"}
           {isListening && "Ouvindo..."}
-          {!isLoading && !isSpeaking && !isListening && lastMessage?.role === "assistant" && "Clique no orbe para ouvir novamente"}
+          {!isLoading && !isLoadingAudio && !isSpeaking && !isPaused && !isListening && lastMessage?.role === "assistant" && "Toque no círculo para ouvir novamente"}
         </p>
 
-        {/* Last message preview - only show brief summary */}
+        {/* Last message preview - summary */}
         {lastMessage?.role === "assistant" && (
           <div 
             className="w-full max-w-md bg-muted/50 backdrop-blur-sm rounded-2xl p-4 cursor-pointer hover:bg-muted/70 transition-colors"
             onClick={() => speak(lastMessage.content)}
           >
             <p className="text-xs text-muted-foreground mb-1">Resumo:</p>
-            <p className="text-sm leading-relaxed line-clamp-2">
-              {lastMessage.content.length > 100 
-                ? lastMessage.content.substring(0, 100) + "..." 
+            <p className="text-sm leading-relaxed line-clamp-4">
+              {lastMessage.content.length > 200 
+                ? lastMessage.content.substring(0, 200) + "..." 
                 : lastMessage.content}
             </p>
           </div>
@@ -346,11 +406,7 @@ export default function ProfessoraVirtual() {
             disabled={isLoading}
             className="flex-shrink-0 h-12 w-12"
           >
-            {isListening ? (
-              <MicOff className="h-5 w-5" />
-            ) : (
-              <Mic className="h-5 w-5" />
-            )}
+            {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </Button>
           
           <Input
@@ -373,11 +429,7 @@ export default function ProfessoraVirtual() {
             size="icon"
             className="flex-shrink-0 h-12 w-12"
           >
-            {isLoading ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <Send className="h-5 w-5" />
-            )}
+            {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
           </Button>
         </div>
 
@@ -389,11 +441,7 @@ export default function ProfessoraVirtual() {
             onClick={toggleMute}
             className="flex-shrink-0 h-8 w-8"
           >
-            {isMuted ? (
-              <VolumeX className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <Volume2 className="h-4 w-4" />
-            )}
+            {isMuted ? <VolumeX className="h-4 w-4 text-muted-foreground" /> : <Volume2 className="h-4 w-4" />}
           </Button>
           
           <Slider
@@ -413,18 +461,36 @@ export default function ProfessoraVirtual() {
           </span>
         </div>
 
-        {/* Stop button when speaking */}
-        {isSpeaking && (
-          <Button
-            variant="outline"
-            onClick={stopSpeaking}
-            className="w-full"
-          >
-            Parar de falar
-          </Button>
+        {/* Pause/Resume and Stop buttons when audio is playing or paused */}
+        {(isSpeaking || isPaused) && (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={togglePause}
+              className="flex-1"
+            >
+              {isPaused ? (
+                <>
+                  <Play className="h-4 w-4 mr-2" />
+                  Continuar
+                </>
+              ) : (
+                <>
+                  <Pause className="h-4 w-4 mr-2" />
+                  Pausar
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={stopSpeaking}
+              className="flex-1"
+            >
+              Parar
+            </Button>
+          </div>
         )}
       </div>
     </div>
   );
 }
-
