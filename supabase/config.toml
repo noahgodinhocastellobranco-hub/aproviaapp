@@ -49,3 +49,9 @@ verify_jwt = false
 
 [functions.professora-tts]
 verify_jwt = false
+
+[functions.gerar-prova-enem]
+verify_jwt = false
+
+[functions.corrigir-prova-enem]
+verify_jwt = false
