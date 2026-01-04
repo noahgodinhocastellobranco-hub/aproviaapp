@@ -1,4 +1,4 @@
-import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, ExternalLink, Timer, HelpCircle, ClipboardList, FolderDown, GraduationCap, Trophy, Search, Target } from "lucide-react";
+import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, ExternalLink, Timer, HelpCircle, ClipboardList, FolderDown, GraduationCap, Trophy, Search } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { PWAStatusBar } from "./PWAStatusBar";
 import { ThemeToggle } from "./ThemeToggle";
@@ -30,7 +30,6 @@ const menuItems = [
   { title: "Fazendo um simulado", url: "/fazendo-simulado", icon: ClipboardList },
   { title: "Prova ENEM Exclusiva", url: "/prova-enem", icon: Trophy },
   { title: "Consultar Curso", url: "/consultar-curso", icon: Search },
-  { title: "Meu Desempenho", url: "/desempenho", icon: Target },
   { title: "Pomodoro", url: "/pomodoro", icon: Timer },
 ];
 
