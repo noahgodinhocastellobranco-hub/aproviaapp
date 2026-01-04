@@ -86,49 +86,11 @@ serve(async (req) => {
       throw new Error("Área inválida");
     }
 
-    const systemPrompt = `Você é um especialista em elaboração de questões do ENEM. Você deve criar questões ORIGINAIS que sigam EXATAMENTE o padrão do ENEM:
+    const systemPrompt = `Gere questões ENEM em JSON. Texto base curto (2-3 frases), 5 alternativas, 1 correta. Semente: ${provaId}`;
 
-CARACTERÍSTICAS DAS QUESTÕES DO ENEM:
-1. Sempre começam com um TEXTO BASE (pode ser um trecho literário, notícia, gráfico descrito, charge descrita, dados estatísticos, etc.)
-2. O texto base deve ser RELEVANTE e ATUAL quando possível
-3. A questão deve exigir INTERPRETAÇÃO e ANÁLISE CRÍTICA
-4. As 5 alternativas devem ser plausíveis, com apenas UMA correta
-5. Use linguagem formal e clara
-6. Evite pegadinhas óbvias - o desafio deve ser intelectual
+    const userPrompt = `${quantidade} questões "${areaInfo.nome}". Competências: ${areaInfo.competencias.slice(0, quantidade).join(", ")}
 
-IMPORTANTE:
-- Cada questão deve abordar uma competência diferente
-- As questões devem ter nível de dificuldade MÉDIO a DIFÍCIL (compatível com ENEM)
-- Use a semente "${provaId}" para garantir questões únicas
-- Varie os tipos de texto base (literário, jornalístico, científico, gráfico, charge, etc.)
-
-Retorne EXATAMENTE um JSON válido com a estrutura especificada.`;
-
-    const userPrompt = `Crie ${quantidade} questões ORIGINAIS para a área "${areaInfo.nome}" do ENEM.
-
-Competências a abordar: ${areaInfo.competencias.slice(0, quantidade).join(", ")}
-
-Retorne um JSON com esta estrutura EXATA:
-{
-  "questoes": [
-    {
-      "numero": 1,
-      "competencia": "Nome da competência",
-      "textoBase": "Texto base completo da questão (mínimo 100 palavras)",
-      "fonte": "Fonte fictícia mas realista do texto",
-      "enunciado": "Pergunta da questão",
-      "alternativas": {
-        "A": "Alternativa A",
-        "B": "Alternativa B",
-        "C": "Alternativa C",
-        "D": "Alternativa D",
-        "E": "Alternativa E"
-      },
-      "gabarito": "A",
-      "explicacao": "Explicação detalhada da resposta correta e por que as outras estão erradas"
-    }
-  ]
-}`;
+JSON:{"questoes":[{"numero":1,"competencia":"","textoBase":"","fonte":"","enunciado":"","alternativas":{"A":"","B":"","C":"","D":"","E":""},"gabarito":"A","explicacao":""}]}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -137,12 +99,12 @@ Retorne um JSON com esta estrutura EXATA:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-2.5-flash-lite",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        temperature: 0.8,
+        temperature: 0.3,
       }),
     });
 
