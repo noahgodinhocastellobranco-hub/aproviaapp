@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Volume2, Loader2, VolumeX } from "lucide-react";
+import { Send, Volume2, Loader2, VolumeX, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,7 +15,8 @@ export default function BibliotecaEnem() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -27,76 +28,103 @@ export default function BibliotecaEnem() {
     scrollToBottom();
   }, [messages]);
 
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
     const userMessage: Message = { role: "user", content: input.trim() };
-    setMessages((prev) => [...prev, userMessage]);
+    const allMessages = [...messages, userMessage];
+    
+    setMessages(allMessages);
     setInput("");
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("professora-enem", {
-        body: { messages: [...messages, userMessage] },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/professora-enem`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ messages: allMessages }),
+        }
+      );
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Erro ${response.status}`);
+      }
 
-      const reader = data.body?.getReader();
-      if (!reader) throw new Error("Sem resposta do servidor");
+      if (!response.body) {
+        throw new Error("Sem resposta do servidor");
+      }
 
+      const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let assistantContent = "";
-      let textBuffer = "";
-      let streamDone = false;
+      let buffer = "";
 
-      while (!streamDone) {
+      while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        textBuffer += decoder.decode(value, { stream: true });
+        buffer += decoder.decode(value, { stream: true });
 
-        let newlineIndex: number;
-        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-          let line = textBuffer.slice(0, newlineIndex);
-          textBuffer = textBuffer.slice(newlineIndex + 1);
+        // Process complete lines
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || ""; // Keep incomplete line in buffer
 
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (line.startsWith(":") || line.trim() === "") continue;
-          if (!line.startsWith("data: ")) continue;
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          
+          if (!trimmedLine || trimmedLine.startsWith(":")) continue;
+          if (!trimmedLine.startsWith("data: ")) continue;
 
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") {
-            streamDone = true;
-            break;
-          }
+          const jsonStr = trimmedLine.slice(6);
+          if (jsonStr === "[DONE]") continue;
 
           try {
             const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (content) {
-              assistantContent += content;
+            const delta = parsed.choices?.[0]?.delta?.content;
+            
+            if (delta) {
+              assistantContent += delta;
               setMessages((prev) => {
                 const newMessages = [...prev];
-                const lastMessage = newMessages[newMessages.length - 1];
-                if (lastMessage?.role === "assistant") {
-                  lastMessage.content = assistantContent;
-                } else {
-                  newMessages.push({ role: "assistant", content: assistantContent });
+                const lastMsg = newMessages[newMessages.length - 1];
+                
+                if (lastMsg?.role === "assistant") {
+                  return newMessages.map((m, i) =>
+                    i === newMessages.length - 1
+                      ? { ...m, content: assistantContent }
+                      : m
+                  );
                 }
-                return newMessages;
+                return [...newMessages, { role: "assistant", content: assistantContent }];
               });
             }
           } catch {
-            textBuffer = line + "\n" + textBuffer;
-            break;
+            // Skip invalid JSON
           }
         }
       }
 
+      // Keep only last 20 messages
       setMessages((prev) => (prev.length > 20 ? prev.slice(-20) : prev));
+      
     } catch (error: any) {
-      console.error("Erro ao enviar mensagem:", error);
+      console.error("Erro ao enviar:", error);
       toast({
         title: "Erro",
         description: error.message || "Não foi possível processar sua pergunta.",
@@ -107,143 +135,186 @@ export default function BibliotecaEnem() {
     }
   };
 
+  const stopAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    setIsSpeaking(false);
+  };
+
   const handleSpeak = async (text: string) => {
+    // If already speaking, stop
     if (isSpeaking) {
-      currentAudio?.pause();
-      setCurrentAudio(null);
-      setIsSpeaking(false);
+      stopAudio();
       return;
     }
 
-    setIsSpeaking(true);
+    setIsGeneratingAudio(true);
+
     try {
-      const { data, error } = await supabase.functions.invoke("text-to-speech-enem", {
-        body: { text },
-      });
+      // Limit text length for TTS
+      const limitedText = text.length > 2000 ? text.slice(0, 2000) + "..." : text;
 
-      if (error) throw error;
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech-enem`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ text: limitedText }),
+        }
+      );
 
-      const audio = new Audio(`data:audio/mp3;base64,${data.audioContent}`);
-      setCurrentAudio(audio);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Erro ao gerar áudio");
+      }
 
+      const data = await response.json();
+
+      if (!data.audioContent) {
+        throw new Error("Áudio não recebido");
+      }
+
+      // Create and play audio
+      const audio = new Audio(`data:audio/mpeg;base64,${data.audioContent}`);
+      audioRef.current = audio;
+
+      audio.onplay = () => setIsSpeaking(true);
       audio.onended = () => {
         setIsSpeaking(false);
-        setCurrentAudio(null);
+        audioRef.current = null;
+      };
+      audio.onerror = () => {
+        setIsSpeaking(false);
+        audioRef.current = null;
+        toast({
+          title: "Erro",
+          description: "Erro ao reproduzir áudio",
+          variant: "destructive",
+        });
       };
 
-      audio.play();
+      await audio.play();
+      
     } catch (error: any) {
-      console.error("Erro ao gerar áudio:", error);
+      console.error("Erro TTS:", error);
       toast({
         title: "Erro",
-        description: "Não foi possível gerar o áudio.",
+        description: error.message || "Não foi possível gerar o áudio.",
         variant: "destructive",
       });
-      setIsSpeaking(false);
+    } finally {
+      setIsGeneratingAudio(false);
     }
   };
 
-  const lastAssistantMessage = [...messages].reverse().find(m => m.role === "assistant");
+  const lastAssistantMessage = messages.filter(m => m.role === "assistant").pop();
+
+  const exampleQuestions = [
+    "Me explique regra de três",
+    "O que é mitose?",
+    "Como fazer uma boa redação?",
+    "Explique a Segunda Guerra Mundial",
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex flex-col">
-      {/* Header com Avatar Animado */}
-      <div className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container max-w-4xl mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex flex-col">
+      {/* Header */}
+      <header className="border-b bg-background/90 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container max-w-3xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            {/* Avatar Animado */}
+            {/* Avatar */}
             <div className="relative">
-              <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-4xl transition-all duration-300 ${
-                isSpeaking ? 'animate-pulse scale-110' : 'scale-100'
-              }`}>
+              <div
+                className={`w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center text-3xl shadow-lg transition-transform duration-300 ${
+                  isSpeaking ? "scale-110 animate-pulse" : ""
+                }`}
+              >
                 👩‍🏫
               </div>
               {isSpeaking && (
-                <>
-                  <div className="absolute inset-0 rounded-full bg-primary/30 animate-ping" />
-                  <div className="absolute inset-0 rounded-full bg-primary/20 animate-pulse" />
-                </>
+                <div className="absolute -inset-1 rounded-full bg-primary/20 animate-ping" />
               )}
             </div>
 
-            {/* Título */}
             <div className="flex-1">
-              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              <h1 className="text-xl md:text-2xl font-bold text-foreground flex items-center gap-2">
                 Professora ENEM
+                <Sparkles className="h-5 w-5 text-primary" />
               </h1>
-              <p className="text-sm md:text-base text-muted-foreground mt-1">
-                Olá! Me pergunte qualquer dúvida que eu explico de forma simples e objetiva.
+              <p className="text-sm text-muted-foreground">
+                Tire suas dúvidas e ouça as explicações em áudio!
               </p>
             </div>
 
-            {/* Indicador de Áudio */}
             {isSpeaking && (
-              <div className="flex items-center gap-2 text-primary animate-fade-in">
+              <div className="flex items-center gap-2 text-primary">
                 <Volume2 className="h-5 w-5 animate-pulse" />
-                <span className="text-sm font-medium hidden md:block">Falando...</span>
+                <span className="text-sm font-medium hidden sm:block">Falando...</span>
               </div>
             )}
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Área de Mensagens */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="container max-w-4xl mx-auto px-4 py-6">
+      {/* Messages */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="container max-w-3xl mx-auto px-4 py-6">
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full py-20 text-center space-y-6 animate-fade-in">
-              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-6xl">
+            <div className="flex flex-col items-center justify-center py-16 text-center space-y-6">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-5xl">
                 💡
               </div>
               <div className="space-y-2">
-                <h2 className="text-xl font-semibold text-foreground">
-                  Como posso te ajudar hoje?
-                </h2>
-                <p className="text-muted-foreground max-w-md">
-                  Digite sua dúvida abaixo. Posso explicar qualquer matéria do ENEM!
+                <h2 className="text-lg font-semibold">Como posso te ajudar?</h2>
+                <p className="text-muted-foreground text-sm max-w-md">
+                  Pergunte qualquer coisa sobre as matérias do ENEM. Eu explico e você pode ouvir em áudio!
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2 justify-center max-w-2xl">
-                {["Funções quadráticas", "Probabilidade", "Interpretação de texto", "Mitocôndria"].map((exemplo) => (
+              <div className="flex flex-wrap gap-2 justify-center max-w-lg">
+                {exampleQuestions.map((q) => (
                   <button
-                    key={exemplo}
-                    onClick={() => setInput(exemplo)}
-                    className="px-4 py-2 rounded-full bg-primary/10 hover:bg-primary/20 text-sm font-medium transition-all hover:scale-105"
+                    key={q}
+                    onClick={() => setInput(q)}
+                    className="px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-sm transition-colors"
                   >
-                    {exemplo}
+                    {q}
                   </button>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="space-y-6">
-              {messages.map((message, index) => (
+            <div className="space-y-4">
+              {messages.map((msg, idx) => (
                 <div
-                  key={index}
-                  className={`flex gap-4 animate-fade-in ${
-                    message.role === "user" ? "justify-end" : "justify-start"
-                  }`}
+                  key={idx}
+                  className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                 >
-                  {message.role === "assistant" && (
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-xl flex-shrink-0">
+                  {msg.role === "assistant" && (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center text-lg flex-shrink-0">
                       👩‍🏫
                     </div>
                   )}
                   
                   <div
-                    className={`max-w-[75%] rounded-2xl p-4 shadow-lg ${
-                      message.role === "user"
+                    className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                      msg.role === "user"
                         ? "bg-primary text-primary-foreground"
-                        : "bg-background border border-primary/20"
+                        : "bg-muted"
                     }`}
                   >
-                    <p className="whitespace-pre-wrap text-sm md:text-base leading-relaxed">
-                      {message.content}
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                      {msg.content}
                     </p>
                   </div>
 
-                  {message.role === "user" && (
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-secondary/60 flex items-center justify-center text-xl flex-shrink-0">
+                  {msg.role === "user" && (
+                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-lg flex-shrink-0">
                       👤
                     </div>
                   )}
@@ -253,40 +324,48 @@ export default function BibliotecaEnem() {
             </div>
           )}
         </div>
-      </div>
+      </main>
 
       {/* Input Area */}
-      <div className="border-t bg-background/80 backdrop-blur-sm sticky bottom-0">
-        <div className="container max-w-4xl mx-auto px-4 py-4">
+      <footer className="border-t bg-background/90 backdrop-blur-sm sticky bottom-0">
+        <div className="container max-w-3xl mx-auto px-4 py-4 space-y-3">
+          {/* Audio Button */}
           {lastAssistantMessage && (
-            <div className="mb-3 flex justify-center">
+            <div className="flex justify-center">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleSpeak(lastAssistantMessage.content)}
-                className="gap-2 shadow-sm hover:shadow-md transition-all"
+                disabled={isGeneratingAudio}
+                className="gap-2"
               >
-                {isSpeaking ? (
+                {isGeneratingAudio ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Gerando áudio...
+                  </>
+                ) : isSpeaking ? (
                   <>
                     <VolumeX className="h-4 w-4" />
-                    Pausar explicação
+                    Parar áudio
                   </>
                 ) : (
                   <>
                     <Volume2 className="h-4 w-4" />
-                    Ouvir última explicação
+                    Ouvir explicação
                   </>
                 )}
               </Button>
             </div>
           )}
 
-          <div className="flex gap-3">
+          {/* Input */}
+          <div className="flex gap-2">
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Digite sua dúvida aqui... (ex: me explique Probabilidade)"
-              className="min-h-[60px] resize-none shadow-sm text-base"
+              placeholder="Digite sua dúvida..."
+              className="min-h-[50px] max-h-[120px] resize-none"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -299,7 +378,7 @@ export default function BibliotecaEnem() {
               onClick={handleSend}
               disabled={isLoading || !input.trim()}
               size="lg"
-              className="px-6 h-[60px] shadow-md hover:shadow-lg transition-all"
+              className="h-[50px] px-4"
             >
               {isLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -309,11 +388,11 @@ export default function BibliotecaEnem() {
             </Button>
           </div>
 
-          <p className="text-xs text-muted-foreground text-center mt-3">
-            💡 Histórico das últimas 10 conversas • Pressione Enter para enviar
+          <p className="text-xs text-muted-foreground text-center">
+            Pressione Enter para enviar • Shift+Enter para nova linha
           </p>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }
