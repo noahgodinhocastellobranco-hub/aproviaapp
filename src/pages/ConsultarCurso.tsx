@@ -21,7 +21,10 @@ import {
   Building2,
   DollarSign,
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  Calculator,
+  XCircle,
+  AlertTriangle
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -84,6 +87,11 @@ export default function ConsultarCurso() {
   const [universidade, setUniversidade] = useState("");
   const [carregando, setCarregando] = useState(false);
   const [resultado, setResultado] = useState<ResultadoConsulta | null>(null);
+  
+  // Estados para simulação de nota
+  const [mostrarSimulador, setMostrarSimulador] = useState(false);
+  const [minhaNota, setMinhaNota] = useState("");
+  const [modalidade, setModalidade] = useState<"ampla" | "cotas">("ampla");
 
   const consultarCurso = async (cursoSelecionado?: string) => {
     const cursoConsulta = cursoSelecionado || curso;
@@ -133,6 +141,42 @@ export default function ConsultarCurso() {
   const getNotaProgress = (nota: number) => {
     return ((nota - 300) / 700) * 100;
   };
+
+  const calcularChances = () => {
+    if (!resultado || !minhaNota) return null;
+    
+    const nota = parseFloat(minhaNota);
+    if (isNaN(nota) || nota < 0 || nota > 1000) return null;
+
+    const notasRef = modalidade === "ampla" 
+      ? resultado.notasCorte.amplaConcorrencia 
+      : resultado.notasCorte.cotasSociais;
+
+    const diferenca = nota - notasRef.media;
+    const percentualRelativo = ((nota - notasRef.minima) / (notasRef.maxima - notasRef.minima)) * 100;
+
+    let status: "aprovado" | "chances" | "dificil";
+    let mensagem: string;
+    let cor: string;
+
+    if (nota >= notasRef.media) {
+      status = "aprovado";
+      mensagem = "Excelente! Sua nota está acima da média. Boas chances de aprovação!";
+      cor = "text-green-600";
+    } else if (nota >= notasRef.minima) {
+      status = "chances";
+      mensagem = `Você está ${Math.abs(diferenca).toFixed(0)} pontos abaixo da média, mas acima da mínima. Continue estudando!`;
+      cor = "text-yellow-600";
+    } else {
+      status = "dificil";
+      mensagem = `Você precisa de mais ${(notasRef.minima - nota).toFixed(0)} pontos para atingir a nota mínima.`;
+      cor = "text-red-600";
+    }
+
+    return { status, mensagem, cor, diferenca, percentualRelativo, notasRef };
+  };
+
+  const chancesResult = calcularChances();
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -316,6 +360,124 @@ export default function ConsultarCurso() {
                     </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Simulador de Nota */}
+            <Card className="border-2 border-dashed border-primary/30">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calculator className="h-5 w-5 text-primary" />
+                  Simular Minha Nota
+                </CardTitle>
+                <CardDescription>
+                  Digite sua nota (ou nota esperada) para ver suas chances de aprovação
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="minhaNota">Sua nota do ENEM</Label>
+                    <Input
+                      id="minhaNota"
+                      type="number"
+                      placeholder="Ex: 720"
+                      min="0"
+                      max="1000"
+                      value={minhaNota}
+                      onChange={(e) => setMinhaNota(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Modalidade</Label>
+                    <div className="flex gap-2">
+                      <Button
+                        variant={modalidade === "ampla" ? "default" : "outline"}
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => setModalidade("ampla")}
+                      >
+                        Ampla
+                      </Button>
+                      <Button
+                        variant={modalidade === "cotas" ? "default" : "outline"}
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => setModalidade("cotas")}
+                      >
+                        Cotas
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {chancesResult && (
+                  <div className={`p-4 rounded-lg ${
+                    chancesResult.status === "aprovado" ? "bg-green-500/10 border border-green-500/30" :
+                    chancesResult.status === "chances" ? "bg-yellow-500/10 border border-yellow-500/30" :
+                    "bg-red-500/10 border border-red-500/30"
+                  }`}>
+                    <div className="flex items-start gap-3">
+                      {chancesResult.status === "aprovado" ? (
+                        <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
+                      ) : chancesResult.status === "chances" ? (
+                        <AlertTriangle className="h-6 w-6 text-yellow-600 flex-shrink-0 mt-0.5" />
+                      ) : (
+                        <XCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-0.5" />
+                      )}
+                      <div className="flex-1">
+                        <p className={`font-semibold ${chancesResult.cor}`}>
+                          {chancesResult.status === "aprovado" ? "Alta chance de aprovação!" :
+                           chancesResult.status === "chances" ? "Chances moderadas" :
+                           "Precisa melhorar"}
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {chancesResult.mensagem}
+                        </p>
+                        
+                        <div className="mt-3 space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Sua nota:</span>
+                            <span className="font-bold">{minhaNota}</span>
+                          </div>
+                          <div className="relative">
+                            <Progress 
+                              value={getNotaProgress(parseFloat(minhaNota))} 
+                              className="h-4" 
+                            />
+                            <div 
+                              className="absolute top-0 h-4 w-0.5 bg-primary"
+                              style={{ left: `${getNotaProgress(chancesResult.notasRef.minima)}%` }}
+                              title="Nota mínima"
+                            />
+                            <div 
+                              className="absolute top-0 h-4 w-0.5 bg-green-600"
+                              style={{ left: `${getNotaProgress(chancesResult.notasRef.media)}%` }}
+                              title="Nota média"
+                            />
+                          </div>
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>Mín: {chancesResult.notasRef.minima}</span>
+                            <span className="text-green-600 font-medium">Média: {chancesResult.notasRef.media}</span>
+                            <span>Máx: {chancesResult.notasRef.maxima}</span>
+                          </div>
+                        </div>
+
+                        {chancesResult.diferenca < 0 && (
+                          <p className="text-sm mt-3 p-2 bg-background rounded">
+                            💡 <strong>Dica:</strong> Foque nas áreas de maior peso para ganhar os {Math.abs(chancesResult.diferenca).toFixed(0)} pontos necessários!
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {!minhaNota && (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Digite sua nota acima para ver o resultado da simulação
+                  </p>
+                )}
               </CardContent>
             </Card>
 
