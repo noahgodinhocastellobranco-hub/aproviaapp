@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Send, Mic, MicOff, Volume2, VolumeX, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import professoraAvatar from "@/assets/professora-avatar.jpeg";
 
 interface Message {
   role: "user" | "assistant";
@@ -89,18 +90,24 @@ export default function ProfessoraVirtual() {
     utterance.pitch = 1.1;
     utterance.volume = volume / 100;
 
-    // Try to find a Brazilian Portuguese female voice
+    // Find best Brazilian Portuguese female voice
     const voices = synthRef.current.getVoices();
-    const ptBrVoice = voices.find(
-      (v) => v.lang.includes("pt-BR") && v.name.toLowerCase().includes("female")
+    
+    // Priority order for best female voices
+    const femaleKeywords = ["female", "feminino", "mulher", "woman", "luciana", "vitoria", "maria", "ana", "francisca"];
+    
+    const ptBrFemaleVoice = voices.find(
+      (v) => v.lang.includes("pt-BR") && femaleKeywords.some(k => v.name.toLowerCase().includes(k))
+    ) || voices.find(
+      (v) => v.lang === "pt-BR" && !v.name.toLowerCase().includes("male")
     ) || voices.find(
       (v) => v.lang.includes("pt-BR")
     ) || voices.find(
       (v) => v.lang.includes("pt")
     );
 
-    if (ptBrVoice) {
-      utterance.voice = ptBrVoice;
+    if (ptBrFemaleVoice) {
+      utterance.voice = ptBrFemaleVoice;
     }
 
     utterance.onstart = () => setIsSpeaking(true);
@@ -281,30 +288,24 @@ export default function ProfessoraVirtual() {
                 : "bg-gradient-to-br from-primary/80 via-primary/60 to-primary/40 hover:scale-105"
             }`}
           >
-            {/* Inner circle */}
-            <div className={`w-32 h-32 md:w-40 md:h-40 rounded-full bg-background/20 backdrop-blur-sm flex items-center justify-center transition-all duration-300 ${
-              isSpeaking ? "scale-90" : "scale-100"
+            {/* Inner circle with avatar */}
+            <div className={`w-36 h-36 md:w-44 md:h-44 rounded-full overflow-hidden flex items-center justify-center transition-all duration-300 ${
+              isSpeaking ? "scale-95" : "scale-100"
             }`}>
               {isLoading ? (
-                <Loader2 className="w-12 h-12 text-white animate-spin" />
-              ) : isSpeaking ? (
-                <div className="flex gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="w-2 bg-white rounded-full animate-pulse"
-                      style={{
-                        height: `${20 + Math.random() * 30}px`,
-                        animationDelay: `${i * 0.1}s`,
-                        animationDuration: '0.5s',
-                      }}
-                    />
-                  ))}
+                <div className="w-full h-full bg-background/30 flex items-center justify-center">
+                  <Loader2 className="w-12 h-12 text-white animate-spin" />
                 </div>
               ) : isListening ? (
-                <Mic className="w-12 h-12 text-white animate-pulse" />
+                <div className="w-full h-full bg-red-500/30 flex items-center justify-center">
+                  <Mic className="w-12 h-12 text-white animate-pulse" />
+                </div>
               ) : (
-                <span className="text-5xl md:text-6xl">👩‍🏫</span>
+                <img 
+                  src={professoraAvatar} 
+                  alt="Professora Ana" 
+                  className={`w-full h-full object-cover ${isSpeaking ? "animate-pulse" : ""}`}
+                />
               )}
             </div>
           </div>
@@ -318,17 +319,17 @@ export default function ProfessoraVirtual() {
           {!isLoading && !isSpeaking && !isListening && lastMessage?.role === "assistant" && "Clique no orbe para ouvir novamente"}
         </p>
 
-        {/* Last message preview */}
-        {lastMessage && (
+        {/* Last message preview - only show brief summary */}
+        {lastMessage?.role === "assistant" && (
           <div 
-            className="w-full max-w-md bg-muted/50 backdrop-blur-sm rounded-2xl p-4 max-h-32 overflow-y-auto cursor-pointer hover:bg-muted/70 transition-colors"
-            onClick={() => lastMessage.role === "assistant" && speak(lastMessage.content)}
+            className="w-full max-w-md bg-muted/50 backdrop-blur-sm rounded-2xl p-4 cursor-pointer hover:bg-muted/70 transition-colors"
+            onClick={() => speak(lastMessage.content)}
           >
-            <p className="text-sm text-muted-foreground mb-1">
-              {lastMessage.role === "user" ? "Você:" : "Profª Ana:"}
-            </p>
-            <p className="text-sm leading-relaxed line-clamp-3">
-              {lastMessage.content}
+            <p className="text-xs text-muted-foreground mb-1">Resumo:</p>
+            <p className="text-sm leading-relaxed line-clamp-2">
+              {lastMessage.content.length > 100 
+                ? lastMessage.content.substring(0, 100) + "..." 
+                : lastMessage.content}
             </p>
           </div>
         )}
