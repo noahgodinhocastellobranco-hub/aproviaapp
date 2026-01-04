@@ -17,6 +17,7 @@ import ResolverQuestao from "./pages/ResolverQuestao";
 import ComoResolverQuestao from "./pages/ComoResolverQuestao";
 import FazendoSimulado from "./pages/FazendoSimulado";
 import ProvaENEM from "./pages/ProvaENEM";
+import ConsultarCurso from "./pages/ConsultarCurso";
 import Pomodoro from "./pages/Pomodoro";
 import NotFound from "./pages/NotFound";
 
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/como-resolver-questao" element={<ComoResolverQuestao />} />
             <Route path="/fazendo-simulado" element={<FazendoSimulado />} />
             <Route path="/prova-enem" element={<ProvaENEM />} />
+            <Route path="/consultar-curso" element={<ConsultarCurso />} />
             <Route path="/pomodoro" element={<Pomodoro />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
