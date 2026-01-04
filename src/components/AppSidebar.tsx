@@ -1,4 +1,4 @@
-import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, ExternalLink, Timer, HelpCircle, ClipboardList, FolderDown, GraduationCap } from "lucide-react";
+import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, ExternalLink, Timer, HelpCircle, ClipboardList, FolderDown } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { PWAStatusBar } from "./PWAStatusBar";
 import { ThemeToggle } from "./ThemeToggle";
@@ -23,7 +23,6 @@ const menuItems = [
   { title: "Simulados", url: "/simulados", icon: FileText },
   { title: "Matérias", url: "/materias", icon: BookOpen },
   { title: "Materiais de Estudo", url: "/materiais-estudo", icon: FolderDown },
-  { title: "Biblioteca ENEM", url: "/biblioteca-enem", icon: GraduationCap },
   { title: "Redação", url: "/redacao", icon: PenTool },
   { title: "Chat AprovI.A", url: "/chat", icon: MessageCircle },
   { title: "Como resolver questão", url: "/como-resolver-questao", icon: HelpCircle },
