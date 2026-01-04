@@ -14,7 +14,126 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+          nome: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id: string
+          nome?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          nome?: string | null
+        }
+        Relationships: []
+      }
+      resultados_provas: {
+        Row: {
+          acertos: number
+          area: string
+          created_at: string | null
+          id: string
+          nota: number
+          tempo_gasto: number | null
+          total_questoes: number
+          user_id: string
+        }
+        Insert: {
+          acertos: number
+          area: string
+          created_at?: string | null
+          id?: string
+          nota: number
+          tempo_gasto?: number | null
+          total_questoes: number
+          user_id: string
+        }
+        Update: {
+          acertos?: number
+          area?: string
+          created_at?: string | null
+          id?: string
+          nota?: number
+          tempo_gasto?: number | null
+          total_questoes?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      resultados_redacoes: {
+        Row: {
+          competencia_1: number | null
+          competencia_2: number | null
+          competencia_3: number | null
+          competencia_4: number | null
+          competencia_5: number | null
+          created_at: string | null
+          id: string
+          nota_total: number
+          tema: string
+          user_id: string
+        }
+        Insert: {
+          competencia_1?: number | null
+          competencia_2?: number | null
+          competencia_3?: number | null
+          competencia_4?: number | null
+          competencia_5?: number | null
+          created_at?: string | null
+          id?: string
+          nota_total: number
+          tema: string
+          user_id: string
+        }
+        Update: {
+          competencia_1?: number | null
+          competencia_2?: number | null
+          competencia_3?: number | null
+          competencia_4?: number | null
+          competencia_5?: number | null
+          created_at?: string | null
+          id?: string
+          nota_total?: number
+          tema?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tempo_estudo: {
+        Row: {
+          created_at: string | null
+          data: string | null
+          id: string
+          materia: string
+          minutos: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data?: string | null
+          id?: string
+          materia: string
+          minutos: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: string | null
+          id?: string
+          materia?: string
+          minutos?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
