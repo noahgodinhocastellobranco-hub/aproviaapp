@@ -21,14 +21,19 @@ serve(async (req) => {
     // Corrigir questões objetivas
     let acertos = 0;
     let erros = 0;
+    let naoRespondidas = 0;
     const correcaoQuestoes: any[] = [];
     const competenciasErradas: string[] = [];
 
     for (const questao of questoes) {
-      const respostaUsuario = respostas[questao.numero];
+      const respostaUsuario = respostas[questao.numero] || null;
       const acertou = respostaUsuario === questao.gabarito;
       
-      if (acertou) {
+      if (!respostaUsuario) {
+        naoRespondidas++;
+        erros++;
+        competenciasErradas.push(questao.competencia);
+      } else if (acertou) {
         acertos++;
       } else {
         erros++;
@@ -38,30 +43,61 @@ serve(async (req) => {
       correcaoQuestoes.push({
         numero: questao.numero,
         competencia: questao.competencia,
-        respostaUsuario,
+        respostaUsuario: respostaUsuario || "Não respondida",
         gabarito: questao.gabarito,
         acertou,
         explicacao: questao.explicacao
       });
     }
 
-    // Calcular nota TRI simulada (simplificada)
+    // Calcular nota TRI realista
+    // O ENEM usa TRI onde a nota mínima é ~300 e máxima ~900 para cada área
+    // Questões não respondidas = ERRADAS
     const totalQuestoes = questoes.length;
     const percentualAcerto = acertos / totalQuestoes;
     
-    // Simulação simplificada do TRI
+    // Fórmula TRI mais realista baseada em dados históricos do ENEM
+    // Nota mínima real: ~300 (chutou tudo errado)
+    // Nota média: ~500-550 (acertou ~50%)
+    // Nota máxima: ~800-900 (acertou ~90%+)
+    // Nota 1000 é praticamente impossível (acertar 100% com padrão coerente)
+    
     let notaObjetiva = 0;
-    if (percentualAcerto <= 0.2) {
-      notaObjetiva = 300 + (percentualAcerto * 500);
+    
+    if (acertos === 0) {
+      // Zero acertos = nota mínima
+      notaObjetiva = 300;
+    } else if (percentualAcerto <= 0.1) {
+      // Até 10% de acerto - provavelmente chute
+      notaObjetiva = 300 + (percentualAcerto * 400); // 300-340
+    } else if (percentualAcerto <= 0.3) {
+      // 10-30% - desempenho fraco
+      notaObjetiva = 340 + ((percentualAcerto - 0.1) * 600); // 340-460
     } else if (percentualAcerto <= 0.5) {
-      notaObjetiva = 400 + ((percentualAcerto - 0.2) * 600);
-    } else if (percentualAcerto <= 0.8) {
-      notaObjetiva = 580 + ((percentualAcerto - 0.5) * 500);
+      // 30-50% - desempenho abaixo da média
+      notaObjetiva = 460 + ((percentualAcerto - 0.3) * 700); // 460-600
+    } else if (percentualAcerto <= 0.7) {
+      // 50-70% - desempenho médio/bom
+      notaObjetiva = 600 + ((percentualAcerto - 0.5) * 650); // 600-730
+    } else if (percentualAcerto <= 0.85) {
+      // 70-85% - desempenho muito bom
+      notaObjetiva = 730 + ((percentualAcerto - 0.7) * 600); // 730-820
+    } else if (percentualAcerto <= 0.95) {
+      // 85-95% - desempenho excelente
+      notaObjetiva = 820 + ((percentualAcerto - 0.85) * 700); // 820-890
     } else {
-      notaObjetiva = 730 + ((percentualAcerto - 0.8) * 350);
+      // 95-100% - desempenho excepcional
+      notaObjetiva = 890 + ((percentualAcerto - 0.95) * 600); // 890-920
+    }
+    
+    // Penalização por padrão de resposta (detectar chute)
+    // Se há muitas não respondidas, penalizar
+    if (naoRespondidas > totalQuestoes * 0.3) {
+      notaObjetiva = notaObjetiva * 0.9;
     }
 
-    notaObjetiva = Math.min(Math.max(notaObjetiva, 300), 1000);
+    // Limitar entre 300 e 900 (notas históricas reais do ENEM)
+    notaObjetiva = Math.min(Math.max(notaObjetiva, 300), 900);
 
     // Corrigir redação se houver
     let correcaoRedacao = null;
