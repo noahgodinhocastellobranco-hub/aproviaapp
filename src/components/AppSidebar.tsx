@@ -1,4 +1,4 @@
-import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, ExternalLink, Timer, HelpCircle, ClipboardList, FolderDown, GraduationCap, Trophy, Search, Target, LogIn } from "lucide-react";
+import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, ExternalLink, Timer, HelpCircle, ClipboardList, FolderDown, GraduationCap, Trophy, Search, Target } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { PWAStatusBar } from "./PWAStatusBar";
 import { ThemeToggle } from "./ThemeToggle";
@@ -32,7 +32,6 @@ const menuItems = [
   { title: "Consultar Curso", url: "/consultar-curso", icon: Search },
   { title: "Meu Desempenho", url: "/desempenho", icon: Target },
   { title: "Pomodoro", url: "/pomodoro", icon: Timer },
-  { title: "Entrar/Cadastrar", url: "/auth", icon: LogIn },
 ];
 
 export function AppSidebar() {
