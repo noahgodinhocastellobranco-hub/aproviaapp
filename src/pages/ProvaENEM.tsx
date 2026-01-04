@@ -658,8 +658,12 @@ export default function ProvaENEM() {
 
   // Resultado da prova
   if (etapa === "resultado" && resultado) {
-    const notaTotal = resultado.questoes.notaEstimada + (resultado.redacao?.notaTotal || 0);
-    const notaMaxima = 1000 + (incluirRedacao ? 1000 : 0);
+    // Nota objetiva máxima real do ENEM é ~900 (histórico)
+    // Redação máxima é 1000
+    const notaObjetiva = resultado.questoes.notaEstimada;
+    const notaRedacao = resultado.redacao?.notaTotal || 0;
+    const notaTotal = notaObjetiva + notaRedacao;
+    const notaMaxima = 900 + (incluirRedacao ? 1000 : 0);
 
     return (
       <div className="min-h-screen bg-background p-4 md:p-8">
