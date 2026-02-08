@@ -42,15 +42,15 @@ const practiceItems = [
 function NavItem({ item }: { item: { title: string; url: string; icon: React.ComponentType<{ className?: string }> } }) {
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild>
+      <SidebarMenuButton asChild className="!bg-transparent !text-inherit">
         <NavLink
           to={item.url}
           end={item.url === "/"}
           className={({ isActive }) =>
             `flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ${
               isActive
-                ? "bg-primary text-primary-foreground shadow-md font-semibold"
-                : "text-sidebar-foreground hover:bg-sidebar-accent"
+                ? "!bg-primary !text-primary-foreground shadow-md font-semibold"
+                : "!text-foreground hover:!bg-accent"
             }`
           }
         >
