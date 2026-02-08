@@ -58,3 +58,6 @@ verify_jwt = false
 
 [functions.consultar-curso]
 verify_jwt = false
+
+[functions.gerar-rotina]
+verify_jwt = false

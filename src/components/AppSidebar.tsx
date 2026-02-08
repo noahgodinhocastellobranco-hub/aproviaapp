@@ -1,4 +1,4 @@
-import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, ExternalLink, Timer, HelpCircle, ClipboardList, FolderDown, GraduationCap, Trophy, Search, Brain } from "lucide-react";
+import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, ExternalLink, Timer, HelpCircle, ClipboardList, FolderDown, GraduationCap, Trophy, Search, Brain, Calendar } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { PWAStatusBar } from "./PWAStatusBar";
 import { ThemeToggle } from "./ThemeToggle";
@@ -25,6 +25,7 @@ const mainItems = [
 
 const studyItems = [
   { title: "Matérias", url: "/materias", icon: BookOpen },
+  { title: "Rotina de Estudos", url: "/rotina", icon: Calendar },
   { title: "Dicas", url: "/dicas", icon: Lightbulb },
   { title: "Materiais de Estudo", url: "/materiais-estudo", icon: FolderDown },
   { title: "Pomodoro", url: "/pomodoro", icon: Timer },

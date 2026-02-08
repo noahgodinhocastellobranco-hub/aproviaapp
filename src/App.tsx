@@ -20,6 +20,7 @@ import ProvaENEM from "./pages/ProvaENEM";
 import ConsultarCurso from "./pages/ConsultarCurso";
 import Pomodoro from "./pages/Pomodoro";
 import Auth from "./pages/Auth";
+import Rotina from "./pages/Rotina";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
             <Route path="/prova-enem" element={<ProvaENEM />} />
             <Route path="/consultar-curso" element={<ConsultarCurso />} />
             <Route path="/pomodoro" element={<Pomodoro />} />
+            <Route path="/rotina" element={<Rotina />} />
             <Route path="/auth" element={<Auth />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
