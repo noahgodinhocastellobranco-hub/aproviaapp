@@ -8,7 +8,7 @@ import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
-  const { open, setOpen } = useSidebar();
+  const { setOpen } = useSidebar();
   const isMobile = useIsMobile();
 
   useSwipeGesture({
@@ -30,10 +30,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <main className="flex-1 overflow-auto relative">
-          {/* Always show trigger on mobile, or when sidebar is closed on desktop */}
-          {(isMobile || !open) && (
+          {isMobile && (
             <div className="fixed top-4 left-4 z-50">
-              <SidebarTrigger className="bg-background border shadow-md h-10 w-10" />
+              <SidebarTrigger className="bg-primary text-primary-foreground shadow-md h-10 w-10 rounded-xl" />
             </div>
           )}
           {children}
