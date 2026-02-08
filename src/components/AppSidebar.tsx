@@ -74,25 +74,20 @@ export function AppSidebar() {
       className="border-r border-border"
       style={{ background: "#FFFFFF" }}
     >
-      <SidebarHeader className="p-5 pb-4 border-b border-border" style={{ background: "#FFFFFF" }}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: "#0B61FF15" }}>
-              <Brain className="h-5 w-5" style={blueText} />
-            </div>
-            <div>
-              <h2 className="text-base font-bold leading-tight" style={blueText}>
-                AprovI.A
-              </h2>
-              <p className="text-[11px] leading-tight" style={blueTextLight}>Assistente ENEM</p>
-            </div>
+      <SidebarHeader className="p-4 pb-3" style={{ background: "#FFFFFF" }}>
+        <div className="flex items-center gap-3 p-3 rounded-2xl" style={{ background: "#F0F6FF" }}>
+          <div className="flex items-center justify-center w-11 h-11 rounded-xl shadow-sm" style={{ background: "#0B61FF" }}>
+            <Brain className="h-6 w-6 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base font-bold leading-tight" style={blueText}>
+              AprovI.A
+            </h2>
+            <p className="text-[11px] leading-tight" style={blueTextLight}>Assistente ENEM</p>
           </div>
           {isMobile && (
             <SidebarTrigger className="flex-shrink-0 h-8 w-8 rounded-lg" style={blueText} />
           )}
-        </div>
-        <div className="pt-3">
-          <PWAStatusBar />
         </div>
       </SidebarHeader>
 
