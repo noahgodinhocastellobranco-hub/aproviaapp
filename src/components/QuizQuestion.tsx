@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Questao } from "@/data/materiaisEstudo";
+import FormattedText from "@/components/FormattedText";
 
 interface QuizQuestionProps {
   questao: Questao;
@@ -95,7 +96,7 @@ export default function QuizQuestion({ questao, numero }: QuizQuestionProps) {
               </>
             )}
           </p>
-          <p>{questao.explicacao}</p>
+          <FormattedText text={questao.explicacao} />
         </div>
       )}
     </div>

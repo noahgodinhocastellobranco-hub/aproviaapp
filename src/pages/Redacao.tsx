@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import FormattedText from "@/components/FormattedText";
 
 const competenciasInfo = [
   { nome: "Domínio da norma culta", descricao: "Modalidade escrita formal da língua portuguesa" },
@@ -362,12 +363,12 @@ export default function Redacao() {
                           <div className="space-y-2">
                             <div>
                               <p className="text-xs font-semibold text-muted-foreground mb-1">Justificativa:</p>
-                              <p className="text-sm leading-relaxed">{comp.justificativa}</p>
+                              <p className="text-sm leading-relaxed"><FormattedText text={comp.justificativa} /></p>
                             </div>
                             {comp.exemplos && (
                               <div>
                                 <p className="text-xs font-semibold text-muted-foreground mb-1">Exemplos do texto:</p>
-                                <p className="text-sm leading-relaxed text-muted-foreground italic">{comp.exemplos}</p>
+                                <p className="text-sm leading-relaxed text-muted-foreground italic"><FormattedText text={comp.exemplos} /></p>
                               </div>
                             )}
                           </div>
@@ -383,14 +384,14 @@ export default function Redacao() {
                         <CheckCircle2 className="h-5 w-5" />
                         Pontos Fortes
                       </h3>
-                      <p className="text-sm leading-relaxed">{resultado.pontos_fortes}</p>
+                      <p className="text-sm leading-relaxed"><FormattedText text={resultado.pontos_fortes} /></p>
                     </div>
                     <div className="bg-orange-500/10 rounded-xl p-6 border border-orange-500/20">
                       <h3 className="font-semibold text-lg mb-3 flex items-center gap-2 text-orange-600 dark:text-orange-400">
                         <TrendingUp className="h-5 w-5" />
                         Pontos de Melhoria
                       </h3>
-                      <p className="text-sm leading-relaxed">{resultado.pontos_melhoria}</p>
+                      <p className="text-sm leading-relaxed"><FormattedText text={resultado.pontos_melhoria} /></p>
                     </div>
                   </div>
                 </CardContent>

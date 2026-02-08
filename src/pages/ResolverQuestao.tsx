@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Camera, Upload, Loader2, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import FormattedText from '@/components/FormattedText';
 
 const ResolverQuestao = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -183,10 +184,8 @@ const ResolverQuestao = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-sm max-w-none dark:prose-invert">
-                <div className="whitespace-pre-wrap text-foreground">
-                  {solution}
-                </div>
+              <div className="whitespace-pre-wrap text-foreground">
+                <FormattedText text={solution} />
               </div>
             </CardContent>
           </Card>

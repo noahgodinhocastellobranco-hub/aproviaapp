@@ -26,6 +26,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import QuestaoVisual, { type QuestaoVisualData } from "@/components/QuestaoVisual";
+import FormattedText from "@/components/FormattedText";
 
 interface Questao {
   numero: number;
@@ -737,9 +738,9 @@ export default function ProvaENEM() {
                         Análise do Desempenho
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
+                     <CardContent>
                       <p className="text-muted-foreground whitespace-pre-wrap">
-                        {resultado.feedback.feedbackGeral}
+                        <FormattedText text={resultado.feedback.feedbackGeral} />
                       </p>
                     </CardContent>
                   </Card>
@@ -757,7 +758,7 @@ export default function ProvaENEM() {
                           {resultado.feedback.areasEstudar.map((area, idx) => (
                             <li key={idx} className="flex items-start gap-2">
                               <span className="text-orange-500">•</span>
-                              {area}
+                              <FormattedText text={area} />
                             </li>
                           ))}
                         </ul>
@@ -776,7 +777,7 @@ export default function ProvaENEM() {
                           {resultado.feedback.dicasEstudo.map((dica, idx) => (
                             <li key={idx} className="flex items-start gap-2">
                               <span className="text-green-500">•</span>
-                              {dica}
+                              <FormattedText text={dica} />
                             </li>
                           ))}
                         </ul>
@@ -787,7 +788,7 @@ export default function ProvaENEM() {
                   <Card className="bg-primary/5 border-primary/20">
                     <CardContent className="pt-6">
                       <h3 className="font-semibold mb-2">🎯 Meta para a Próxima Prova</h3>
-                      <p className="text-muted-foreground">{resultado.feedback.metaProximaProva}</p>
+                      <p className="text-muted-foreground"><FormattedText text={resultado.feedback.metaProximaProva} /></p>
                     </CardContent>
                   </Card>
                 </>
@@ -853,7 +854,7 @@ export default function ProvaENEM() {
                           </div>
                           <div className="bg-muted/50 rounded-lg p-3 text-sm">
                             <p className="font-medium mb-1">Explicação:</p>
-                            <p className="text-muted-foreground">{correcao.explicacao}</p>
+                            <p className="text-muted-foreground"><FormattedText text={correcao.explicacao} /></p>
                           </div>
                         </CardContent>
                       </Card>
@@ -892,21 +893,21 @@ export default function ProvaENEM() {
                     <CardTitle>Feedback Detalhado</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <p className="text-muted-foreground">{resultado.redacao.feedbackGeral}</p>
+                    <p className="text-muted-foreground"><FormattedText text={resultado.redacao.feedbackGeral} /></p>
 
                     {resultado.redacao.competencias.map((comp) => (
                       <div key={comp.numero} className="border-t pt-4">
                         <h4 className="font-medium mb-2">
                           Competência {comp.numero} - {comp.nota}/200
                         </h4>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {comp.justificativa}
-                        </p>
+                         <p className="text-sm text-muted-foreground mb-2">
+                           <FormattedText text={comp.justificativa} />
+                         </p>
                         {comp.pontosMelhorar.length > 0 && (
                           <ul className="text-sm space-y-1">
                             {comp.pontosMelhorar.map((ponto, idx) => (
                               <li key={idx} className="text-orange-600 dark:text-orange-400">
-                                • {ponto}
+                                • <FormattedText text={ponto} />
                               </li>
                             ))}
                           </ul>

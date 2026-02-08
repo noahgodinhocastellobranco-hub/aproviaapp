@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Send, Mic, MicOff, Volume2, VolumeX, Loader2, Pause, Play, History, Plus, Trash2, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import FormattedText from "@/components/FormattedText";
 
 interface Message {
   role: "user" | "assistant";
@@ -602,9 +603,11 @@ export default function ProfessoraVirtual() {
           >
             <p className="text-xs text-muted-foreground mb-1">Resumo:</p>
             <p className="text-sm leading-relaxed line-clamp-4">
-              {cleanMarkdown(lastMessage.content).length > 200 
-                ? cleanMarkdown(lastMessage.content).substring(0, 200) + "..." 
-                : cleanMarkdown(lastMessage.content)}
+              <FormattedText text={
+                cleanMarkdown(lastMessage.content).length > 200 
+                  ? cleanMarkdown(lastMessage.content).substring(0, 200) + "..." 
+                  : cleanMarkdown(lastMessage.content)
+              } />
             </p>
           </div>
         )}
