@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Send, Mic, MicOff, Volume2, VolumeX, Loader2, Pause, Play, History, Plus, Trash2 } from "lucide-react";
+import { Send, Mic, MicOff, Volume2, VolumeX, Loader2, Pause, Play, History, Plus, Trash2, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Message {
@@ -418,61 +418,89 @@ export default function ProfessoraVirtual() {
         
         <Sheet open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="flex-shrink-0">
+            <Button variant="outline" size="icon" className="flex-shrink-0 h-11 w-11 rounded-xl border-2">
               <History className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent>
-            <SheetHeader>
-              <SheetTitle>Histórico de Conversas</SheetTitle>
-            </SheetHeader>
-            <div className="mt-4 space-y-2">
+          <SheetContent className="w-[85%] sm:max-w-md p-0">
+            <div className="p-6 pb-4 border-b border-border bg-primary/5">
+              <SheetHeader>
+                <SheetTitle className="text-xl font-bold flex items-center gap-2">
+                  <History className="h-5 w-5 text-primary" />
+                  Histórico de Conversas
+                </SheetTitle>
+              </SheetHeader>
               <Button 
                 onClick={startNewConversation} 
-                className="w-full"
-                variant="outline"
+                className="w-full mt-4 h-11 text-sm font-semibold"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Nova Conversa
               </Button>
-              
-              <ScrollArea className="h-[calc(100vh-200px)]">
-                <div className="space-y-2 pr-4">
-                  {conversations.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-8">
+            </div>
+            
+            <ScrollArea className="h-[calc(100vh-180px)]">
+              <div className="p-4 space-y-3">
+                {conversations.length === 0 ? (
+                  <div className="text-center py-16 px-4">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                      <History className="h-8 w-8 text-muted-foreground/50" />
+                    </div>
+                    <p className="text-base font-medium text-muted-foreground mb-1">
                       Nenhuma conversa ainda
                     </p>
-                  ) : (
-                    conversations.map((conv) => (
-                      <div
-                        key={conv.id}
-                        onClick={() => loadConversation(conv)}
-                        className={`p-3 rounded-lg cursor-pointer transition-colors flex items-start justify-between gap-2 ${
+                    <p className="text-sm text-muted-foreground/70">
+                      Comece uma conversa com a professora!
+                    </p>
+                  </div>
+                ) : (
+                  conversations.map((conv) => (
+                    <div
+                      key={conv.id}
+                      onClick={() => loadConversation(conv)}
+                      className={`p-4 rounded-xl cursor-pointer transition-all duration-200 flex items-center justify-between gap-3 ${
+                        currentConversationId === conv.id
+                          ? "bg-primary/10 border-2 border-primary/30 shadow-sm"
+                          : "bg-muted/40 hover:bg-muted border-2 border-transparent hover:border-border"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                           currentConversationId === conv.id
-                            ? "bg-primary/10 border border-primary/20"
-                            : "bg-muted/50 hover:bg-muted"
-                        }`}
-                      >
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted-foreground/10 text-muted-foreground"
+                        }`}>
+                          <MessageCircle className="h-5 w-5" />
+                        </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{conv.title}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(conv.createdAt).toLocaleDateString("pt-BR")}
+                          <p className="text-sm font-semibold truncate">{conv.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {new Date(conv.createdAt).toLocaleDateString("pt-BR", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                          <p className="text-xs text-muted-foreground/70 mt-0.5">
+                            {conv.messages.length} mensagen{conv.messages.length !== 1 ? "s" : ""}
                           </p>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="flex-shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive"
-                          onClick={(e) => deleteConversation(conv.id, e)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
                       </div>
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
-            </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="flex-shrink-0 h-9 w-9 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        onClick={(e) => deleteConversation(conv.id, e)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
           </SheetContent>
         </Sheet>
       </div>
