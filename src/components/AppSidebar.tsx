@@ -39,10 +39,6 @@ const practiceItems = [
   { title: "Consultar Curso", url: "/consultar-curso", icon: Search },
 ];
 
-const blueText = { color: "#0B61FF" } as const;
-const blueTextLight = { color: "#0B61FF99" } as const;
-const blueTextLabel = { color: "#0B61FF66" } as const;
-
 function NavItem({ item }: { item: { title: string; url: string; icon: React.ComponentType<{ className?: string }> } }) {
   return (
     <SidebarMenuItem>
@@ -52,11 +48,10 @@ function NavItem({ item }: { item: { title: string; url: string; icon: React.Com
         className={({ isActive }) =>
           `flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 no-underline ${
             isActive
-              ? "bg-primary shadow-md font-semibold"
-              : "hover:bg-primary/10"
+              ? "bg-primary text-primary-foreground shadow-md font-semibold"
+              : "text-primary hover:bg-primary/10"
           }`
         }
-        style={({ isActive }) => isActive ? { color: "#FFFFFF" } : blueText}
       >
         <item.icon className="h-4 w-4 flex-shrink-0" />
         <span className="text-sm">{item.title}</span>
@@ -72,29 +67,28 @@ export function AppSidebar() {
   return (
     <Sidebar
       collapsible={isMobile ? "offcanvas" : "none"}
-      className="border-r border-border"
-      style={{ background: "#FFFFFF" }}
+      className="border-r border-border bg-card"
     >
-      <SidebarHeader className="p-4 pb-3" style={{ background: "#FFFFFF" }}>
-        <div className="flex items-center gap-3 p-3 rounded-2xl" style={{ background: "#F0F6FF" }}>
-          <div className="flex items-center justify-center w-11 h-11 rounded-xl shadow-sm" style={{ background: "#0B61FF" }}>
-            <Brain className="h-6 w-6 text-white" />
+      <SidebarHeader className="p-4 pb-3 bg-card">
+        <div className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5">
+          <div className="flex items-center justify-center w-11 h-11 rounded-xl shadow-sm bg-primary">
+            <Brain className="h-6 w-6 text-primary-foreground" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-base font-bold leading-tight" style={blueText}>
+            <h2 className="text-base font-bold leading-tight text-primary">
               AprovI.A
             </h2>
-            <p className="text-[11px] leading-tight" style={blueTextLight}>Assistente ENEM</p>
+            <p className="text-[11px] leading-tight text-primary/60">Assistente ENEM</p>
           </div>
           {isMobile && (
-            <SidebarTrigger className="flex-shrink-0 h-8 w-8 rounded-lg" style={blueText} />
+            <SidebarTrigger className="flex-shrink-0 h-8 w-8 rounded-lg text-primary" />
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-1" style={{ background: "#FFFFFF" }}>
+      <SidebarContent className="px-3 py-1 bg-card">
         <SidebarGroup>
-          <p className="text-[11px] font-semibold uppercase tracking-widest px-3 mb-1" style={blueTextLabel}>
+          <p className="text-[11px] font-semibold uppercase tracking-widest px-3 mb-1 text-primary/40">
             Principal
           </p>
           <SidebarMenu className="space-y-0.5">
@@ -105,7 +99,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup className="mt-2">
-          <p className="text-[11px] font-semibold uppercase tracking-widest px-3 mb-1" style={blueTextLabel}>
+          <p className="text-[11px] font-semibold uppercase tracking-widest px-3 mb-1 text-primary/40">
             Estudos
           </p>
           <SidebarMenu className="space-y-0.5">
@@ -116,7 +110,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup className="mt-2">
-          <p className="text-[11px] font-semibold uppercase tracking-widest px-3 mb-1" style={blueTextLabel}>
+          <p className="text-[11px] font-semibold uppercase tracking-widest px-3 mb-1 text-primary/40">
             Praticar
           </p>
           <SidebarMenu className="space-y-0.5">
@@ -127,7 +121,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border p-3" style={{ background: "#FFFFFF" }}>
+      <SidebarFooter className="border-t border-border p-3 bg-card">
         <SidebarMenu className="space-y-0.5">
           <SidebarMenuItem>
             <ThemeToggle />
@@ -137,8 +131,7 @@ export function AppSidebar() {
               href="https://aproviapagina.lovable.app"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-primary/10 transition-all duration-200 no-underline"
-              style={blueText}
+              className="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-primary/10 transition-all duration-200 no-underline text-primary"
             >
               <ExternalLink className="h-4 w-4 flex-shrink-0" />
               <span className="text-sm font-medium">Página Inicial</span>
