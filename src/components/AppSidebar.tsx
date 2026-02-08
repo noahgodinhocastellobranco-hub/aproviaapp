@@ -50,8 +50,8 @@ function NavItem({ item }: { item: { title: string; url: string; icon: React.Com
           className={({ isActive }) =>
             `flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ${
               isActive
-                ? "!bg-white/20 !text-white shadow-md font-semibold backdrop-blur-sm"
-                : "!text-white/80 hover:!bg-white/10 hover:!text-white"
+                ? "!bg-primary !text-primary-foreground shadow-md font-semibold"
+                : "!text-primary hover:!bg-primary/10"
             }`
           }
         >
@@ -70,23 +70,23 @@ export function AppSidebar() {
   return (
     <Sidebar
       collapsible={isMobile ? "offcanvas" : "none"}
-      className="border-r-0 bg-primary [&>div]:bg-primary"
+      className="border-r border-border bg-card [&>div]:bg-card"
     >
-      <SidebarHeader className="p-5 pb-4 border-b border-white/10">
+      <SidebarHeader className="p-5 pb-4 border-b border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/15">
-              <Brain className="h-5 w-5 text-white" />
+            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10">
+              <Brain className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white leading-tight">
+              <h2 className="text-base font-bold text-primary leading-tight">
                 AprovI.A
               </h2>
-              <p className="text-[11px] text-white/50 leading-tight">Assistente ENEM</p>
+              <p className="text-[11px] text-muted-foreground leading-tight">Assistente ENEM</p>
             </div>
           </div>
           {isMobile && (
-            <SidebarTrigger className="flex-shrink-0 h-8 w-8 rounded-lg text-white hover:bg-white/10" />
+            <SidebarTrigger className="flex-shrink-0 h-8 w-8 rounded-lg text-primary hover:bg-primary/10" />
           )}
         </div>
         <div className="pt-3">
@@ -94,10 +94,9 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-1 bg-primary">
-        {/* Main */}
+      <SidebarContent className="px-3 py-1 bg-card">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-widest text-white/40 px-3 mb-1">
+          <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-widest text-primary/40 px-3 mb-1">
             Principal
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -109,9 +108,8 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Study */}
         <SidebarGroup className="mt-2">
-          <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-widest text-white/40 px-3 mb-1">
+          <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-widest text-primary/40 px-3 mb-1">
             Estudos
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -123,9 +121,8 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Practice */}
         <SidebarGroup className="mt-2">
-          <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-widest text-white/40 px-3 mb-1">
+          <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-widest text-primary/40 px-3 mb-1">
             Praticar
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -138,7 +135,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-white/10 p-3 bg-primary">
+      <SidebarFooter className="border-t border-border p-3 bg-card">
         <SidebarMenu className="space-y-0.5">
           <SidebarMenuItem>
             <ThemeToggle />
@@ -149,7 +146,7 @@ export function AppSidebar() {
                 href="https://aproviapagina.lovable.app"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 rounded-xl px-3 py-2.5 !text-white/80 hover:!bg-white/10 hover:!text-white transition-all duration-200"
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 !text-primary hover:!bg-primary/10 transition-all duration-200"
               >
                 <ExternalLink className="h-4 w-4 flex-shrink-0" />
                 <span className="text-sm font-medium">Página Inicial</span>
