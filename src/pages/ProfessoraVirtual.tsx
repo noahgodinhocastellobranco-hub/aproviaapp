@@ -525,13 +525,20 @@ export default function ProfessoraVirtual() {
           
           {/* Main orb */}
           <div 
-            className={`relative w-48 h-48 md:w-56 md:h-56 rounded-full flex items-center justify-center transition-all duration-500 ${
+            onClick={() => {
+              if (isSpeaking || isPaused) {
+                togglePause();
+              } else if (lastMessage?.role === "assistant" && !isLoading && !isListening) {
+                speak(lastMessage.content);
+              }
+            }}
+            className={`relative w-48 h-48 md:w-56 md:h-56 rounded-full flex items-center justify-center transition-all duration-500 cursor-pointer ${
               isSpeaking 
                 ? "bg-gradient-to-br from-primary via-primary/80 to-primary/60 scale-110 shadow-2xl shadow-primary/50" 
                 : isListening
                 ? "bg-gradient-to-br from-red-500 via-red-400 to-red-300 scale-105 shadow-2xl shadow-red-500/50"
                 : isLoading
-                ? "bg-gradient-to-br from-muted via-muted/80 to-muted/60 animate-pulse"
+                ? "bg-gradient-to-br from-muted via-muted/80 to-muted/60 animate-pulse cursor-default"
                 : isPaused
                 ? "bg-gradient-to-br from-amber-500 via-amber-400 to-amber-300 shadow-xl shadow-amber-500/30"
                 : "bg-gradient-to-br from-primary/80 via-primary/60 to-primary/40 hover:scale-105"
@@ -544,24 +551,35 @@ export default function ProfessoraVirtual() {
               {isLoading ? (
                 <Loader2 className="w-12 h-12 text-white animate-spin" />
               ) : isSpeaking ? (
-                <div className="flex gap-1.5 items-end">
-                  {[...Array(5)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="w-2.5 bg-white rounded-full animate-pulse"
-                      style={{
-                        height: `${20 + i * 8}px`,
-                        animationDelay: `${i * 0.1}s`,
-                      }}
-                    />
-                  ))}
+                <div className="flex flex-col items-center gap-3">
+                  <div className="flex gap-1.5 items-end">
+                    {[...Array(5)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="w-2.5 bg-white rounded-full animate-pulse"
+                        style={{
+                          height: `${20 + i * 8}px`,
+                          animationDelay: `${i * 0.1}s`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-white/70 text-xs font-medium">Toque para pausar</p>
                 </div>
               ) : isPaused ? (
-                <Play className="w-12 h-12 text-white" />
+                <div className="flex flex-col items-center gap-2">
+                  <Play className="w-12 h-12 text-white" />
+                  <p className="text-white/70 text-xs font-medium">Toque para retomar</p>
+                </div>
               ) : isListening ? (
                 <Mic className="w-12 h-12 text-white animate-pulse" />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-white/30" />
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-16 h-16 rounded-full bg-white/30" />
+                  {lastMessage?.role === "assistant" && (
+                    <p className="text-white/50 text-xs font-medium">Toque para ouvir</p>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -660,29 +678,30 @@ export default function ProfessoraVirtual() {
 
         {/* Pause/Resume and Stop buttons */}
         {(isSpeaking || isPaused) && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
             <Button
-              variant="outline"
+              variant={isPaused ? "default" : "outline"}
               onClick={togglePause}
-              className="flex-1"
+              className="flex-1 h-11 font-semibold"
             >
               {isPaused ? (
                 <>
-                  <Play className="h-4 w-4 mr-2" />
-                  Continuar
+                  <Play className="h-5 w-5 mr-2" />
+                  Retomar
                 </>
               ) : (
                 <>
-                  <Pause className="h-4 w-4 mr-2" />
+                  <Pause className="h-5 w-5 mr-2" />
                   Pausar
                 </>
               )}
             </Button>
             <Button
-              variant="outline"
+              variant="destructive"
               onClick={stopSpeaking}
-              className="flex-1"
+              className="flex-1 h-11 font-semibold"
             >
+              <VolumeX className="h-5 w-5 mr-2" />
               Parar
             </Button>
           </div>
