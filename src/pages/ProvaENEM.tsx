@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import QuestaoVisual, { type QuestaoVisualData } from "@/components/QuestaoVisual";
 
 interface Questao {
   numero: number;
@@ -41,6 +42,7 @@ interface Questao {
   };
   gabarito: string;
   explicacao: string;
+  visual?: QuestaoVisualData | null;
 }
 
 interface CorrecaoQuestao {
@@ -462,6 +464,11 @@ export default function ProvaENEM() {
                     {questaoAtualData.fonte}
                   </p>
                 </div>
+
+                {/* Elemento visual: gráfico, tirinha ou tabela */}
+                {questaoAtualData.visual && (
+                  <QuestaoVisual visual={questaoAtualData.visual} />
+                )}
 
                 <p className="font-medium">{questaoAtualData.enunciado}</p>
 
