@@ -68,9 +68,10 @@ function getFraseHoje() {
 // ─── Saudação por horário ───
 function getSaudacao() {
   const h = new Date().getHours();
-  if (h < 12) return "Bom dia";
-  if (h < 18) return "Boa tarde";
-  return "Boa noite";
+  if (h >= 6 && h < 12) return { texto: "Bom dia", emoji: "☀️" };
+  if (h >= 12 && h < 18) return { texto: "Boa tarde", emoji: "🌤️" };
+  if (h >= 18 && h < 24) return { texto: "Boa noite", emoji: "🌙" };
+  return { texto: "Boa madrugada", emoji: "🌙" };
 }
 
 // ─── Ferramentas PRO ───
@@ -224,7 +225,7 @@ export default function Dashboard() {
 
           {/* Greeting */}
           <h1 className="text-3xl md:text-4xl font-extrabold">
-            {saudacao}, <span className="text-primary">{primeiroNome}!</span> 👋
+            {saudacao.texto}, <span className="text-primary">{primeiroNome}!</span> {saudacao.emoji}
           </h1>
           <p className="text-muted-foreground text-base max-w-md mx-auto">
             Sua plataforma de estudos com IA está pronta. Continue de onde parou!
