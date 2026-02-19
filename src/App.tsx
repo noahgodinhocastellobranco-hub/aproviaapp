@@ -31,29 +31,38 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/install" element={<Install />} />
-            <Route path="/dicas" element={<Dicas />} />
-            <Route path="/simulados" element={<Simulados />} />
-            <Route path="/materias" element={<Materias />} />
-            <Route path="/materiais-estudo" element={<MateriaisEstudo />} />
-            <Route path="/redacao" element={<Redacao />} />
-            <Route path="/professora-virtual" element={<ProfessoraVirtual />} />
-            <Route path="/chat" element={<Chat />} />
-            <Route path="/resolver-questao" element={<ResolverQuestao />} />
-            <Route path="/como-resolver-questao" element={<ComoResolverQuestao />} />
-            <Route path="/fazendo-simulado" element={<FazendoSimulado />} />
-            <Route path="/prova-enem" element={<ProvaENEM />} />
-            <Route path="/consultar-curso" element={<ConsultarCurso />} />
-            <Route path="/pomodoro" element={<Pomodoro />} />
-            <Route path="/rotina" element={<Rotina />} />
-            <Route path="/auth" element={<Auth />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
+        <Routes>
+          {/* Sales / Auth pages — no sidebar */}
+          <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+
+          {/* App pages — with sidebar Layout */}
+          <Route
+            path="/*"
+            element={
+              <Layout>
+                <Routes>
+                  <Route path="/install" element={<Install />} />
+                  <Route path="/dicas" element={<Dicas />} />
+                  <Route path="/simulados" element={<Simulados />} />
+                  <Route path="/materias" element={<Materias />} />
+                  <Route path="/materiais-estudo" element={<MateriaisEstudo />} />
+                  <Route path="/redacao" element={<Redacao />} />
+                  <Route path="/professora-virtual" element={<ProfessoraVirtual />} />
+                  <Route path="/chat" element={<Chat />} />
+                  <Route path="/resolver-questao" element={<ResolverQuestao />} />
+                  <Route path="/como-resolver-questao" element={<ComoResolverQuestao />} />
+                  <Route path="/fazendo-simulado" element={<FazendoSimulado />} />
+                  <Route path="/prova-enem" element={<ProvaENEM />} />
+                  <Route path="/consultar-curso" element={<ConsultarCurso />} />
+                  <Route path="/pomodoro" element={<Pomodoro />} />
+                  <Route path="/rotina" element={<Rotina />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Layout>
+            }
+          />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
