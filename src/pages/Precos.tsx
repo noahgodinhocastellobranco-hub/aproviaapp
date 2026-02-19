@@ -16,20 +16,30 @@ const CAKTO_URL = "https://pay.cakto.com.br/3c7yw4k_710255";
 export default function Precos() {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   useEffect(() => {
+    const checkUser = async (userId: string | null) => {
+      if (!userId) { setIsLoggedIn(false); setIsPremium(false); return; }
+      setIsLoggedIn(true);
+      const { data } = await supabase.from("profiles").select("is_premium").eq("id", userId).single();
+      setIsPremium(!!data?.is_premium);
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsLoggedIn(!!session?.user);
+      checkUser(session?.user?.id ?? null);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setIsLoggedIn(!!session?.user);
+      checkUser(session?.user?.id ?? null);
     });
     return () => subscription.unsubscribe();
   }, []);
 
   const handleComprar = () => {
-    if (isLoggedIn) {
+    if (isPremium) {
+      navigate("/dashboard");
+    } else if (isLoggedIn) {
       setCheckoutOpen(true);
     } else {
       navigate("/auth");
@@ -151,7 +161,7 @@ export default function Precos() {
               className="w-full text-base py-6 rounded-xl font-bold gap-2"
               onClick={handleComprar}
             >
-              {isLoggedIn ? "Comprar Agora" : "Fazer Login para Comprar"}
+              {isPremium ? "Acessar Meu Plano PRO" : isLoggedIn ? "Comprar Agora" : "Fazer Login para Comprar"}
               <Sparkles className="h-4 w-4" />
             </Button>
 
