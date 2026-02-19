@@ -237,11 +237,9 @@ export default function Index() {
               </Button>
 
               {/* Suporte */}
-              <Button variant="ghost" size="sm" className="gap-1.5 rounded-md px-3 hidden sm:flex" asChild>
-                <a href="mailto:suporteaprovia@gmail.com">
-                  <HeadphonesIcon className="h-4 w-4" />
-                  <span>Suporte</span>
-                </a>
+              <Button variant="ghost" size="sm" className="gap-1.5 rounded-md px-3 hidden sm:flex" onClick={() => navigate("/suporte")}>
+                <HeadphonesIcon className="h-4 w-4" />
+                <span>Suporte</span>
               </Button>
 
               {/* Assinar PRO */}
