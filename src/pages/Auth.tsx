@@ -22,10 +22,10 @@ export default function Auth() {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) navigate("/chat");
+      if (session?.user) navigate("/");
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) navigate("/chat");
+      if (session?.user) navigate("/");
     });
     return () => subscription.unsubscribe();
   }, [navigate]);

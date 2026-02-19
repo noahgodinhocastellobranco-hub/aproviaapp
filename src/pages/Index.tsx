@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Zap, Brain, Star, CheckCircle2, FileText, MessageSquare,
   Target, BookOpen, PenTool, TrendingUp, Timer, Search,
   Clipboard, GraduationCap, Lightbulb, Shield, AlertTriangle,
   Clock, HelpCircle, MessageCircle, ChevronDown, ChevronUp,
   ArrowRight, Sparkles, X, CheckCheck, BarChart2, Moon, Sun,
+  Settings, HeadphonesIcon, User, LogOut,
 } from "lucide-react";
 
 
@@ -189,27 +191,87 @@ const tools = [
 
 export default function Index() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const navigate = useNavigate();
-
   const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserEmail(session?.user?.email ?? null);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUserEmail(session?.user?.email ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUserEmail(null);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* ─── NAV ─── */}
-      <nav className="sticky top-0 z-50 bg-background">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-end gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="h-9 w-9 rounded-md"
-          >
-            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          </Button>
-          <Button asChild variant="outline" size="sm" className="rounded-md px-4 font-medium border border-border">
-            <Link to="/auth">Login / Criar Conta</Link>
-          </Button>
+      <nav className="sticky top-0 z-50 bg-background border-b border-border/40">
+        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-end gap-1.5">
+          {userEmail ? (
+            <>
+              {/* Email */}
+              <span className="text-sm text-muted-foreground hidden md:block mr-2">{userEmail}</span>
+
+              {/* Theme toggle */}
+              <Button
+                variant="ghost" size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="h-9 w-9 rounded-md"
+              >
+                <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              </Button>
+
+              {/* Configurações */}
+              <Button variant="ghost" size="sm" className="gap-1.5 rounded-md px-3 hidden sm:flex" onClick={() => navigate("/chat")}>
+                <Settings className="h-4 w-4" />
+                <span>Configurações</span>
+              </Button>
+
+              {/* Suporte */}
+              <Button variant="ghost" size="sm" className="gap-1.5 rounded-md px-3 hidden sm:flex" asChild>
+                <a href="mailto:suporteaprovia@gmail.com">
+                  <HeadphonesIcon className="h-4 w-4" />
+                  <span>Suporte</span>
+                </a>
+              </Button>
+
+              {/* Assinar PRO */}
+              <Button size="sm" className="gap-1.5 rounded-md px-4 font-bold" onClick={() => navigate("/precos")}>
+                <Sparkles className="h-3.5 w-3.5" />
+                Assinar PRO
+              </Button>
+
+              {/* Minha Conta / Logout */}
+              <Button variant="outline" size="sm" className="gap-1.5 rounded-md px-3" onClick={handleLogout}>
+                <User className="h-4 w-4" />
+                <span className="hidden sm:inline">Minha Conta</span>
+                <LogOut className="h-3.5 w-3.5 text-muted-foreground" />
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="ghost" size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="h-9 w-9 rounded-md"
+              >
+                <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              </Button>
+              <Button asChild variant="outline" size="sm" className="rounded-md px-4 font-medium border border-border">
+                <Link to="/auth">Login / Criar Conta</Link>
+              </Button>
+            </>
+          )}
         </div>
       </nav>
 
