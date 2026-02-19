@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { CheckCircle2, ArrowLeft, Sparkles, Shield } from "lucide-react";
+import { CheckCircle2, ArrowLeft, Sparkles, Shield, X } from "lucide-react";
 
 const includes = [
   { left: "Correção ilimitada de redações com IA", right: "Chat inteligente para tirar dúvidas" },
@@ -16,6 +16,7 @@ const CAKTO_URL = "https://pay.cakto.com.br/3c7yw4k_710255";
 export default function Precos() {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -27,9 +28,49 @@ export default function Precos() {
     return () => subscription.unsubscribe();
   }, []);
 
+  const handleComprar = () => {
+    if (isLoggedIn) {
+      setCheckoutOpen(true);
+    } else {
+      navigate("/auth");
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+
+      {/* Modal de Checkout */}
+      {checkoutOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => setCheckoutOpen(false)}
+          />
+          {/* Modal */}
+          <div className="relative z-10 w-full max-w-lg mx-4 rounded-2xl overflow-hidden shadow-2xl bg-card border border-border flex flex-col"
+               style={{ height: "min(90vh, 700px)" }}>
+            {/* Header do modal */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-card shrink-0">
+              <span className="font-semibold text-sm text-foreground">Finalizar Assinatura</span>
+              <button
+                onClick={() => setCheckoutOpen(false)}
+                className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            {/* Iframe do checkout */}
+            <iframe
+              src={CAKTO_URL}
+              title="Checkout"
+              className="flex-1 w-full border-0"
+              allow="payment"
+            />
+          </div>
+        </div>
+      )}
       {/* Back */}
       <div className="max-w-4xl mx-auto px-6 pt-6">
         <button
@@ -105,29 +146,18 @@ export default function Precos() {
             </div>
 
             {/* CTA */}
-            {isLoggedIn ? (
-              <Button
-                size="lg"
-                className="w-full text-base py-6 rounded-xl font-bold gap-2"
-                onClick={() => window.open(CAKTO_URL, "_blank")}
-              >
-                Comprar Agora
-                <Sparkles className="h-4 w-4" />
-              </Button>
-            ) : (
-              <Button
-                size="lg"
-                className="w-full text-base py-6 rounded-xl font-bold gap-2"
-                onClick={() => navigate("/auth")}
-              >
-                Fazer Login para Comprar
-                <Sparkles className="h-4 w-4" />
-              </Button>
-            )}
+            <Button
+              size="lg"
+              className="w-full text-base py-6 rounded-xl font-bold gap-2"
+              onClick={handleComprar}
+            >
+              {isLoggedIn ? "Comprar Agora" : "Fazer Login para Comprar"}
+              <Sparkles className="h-4 w-4" />
+            </Button>
 
             {/* Guarantee */}
             <div className="flex items-center justify-center gap-2 mt-4 text-xs text-muted-foreground">
-              <Shield className="h-3.5 w-3.5 text-emerald-500" />
+              <Shield className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
               7 dias de garantia — Cancele quando quiser
             </div>
           </div>
