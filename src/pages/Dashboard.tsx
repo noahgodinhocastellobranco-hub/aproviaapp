@@ -8,6 +8,8 @@ import {
   CheckCircle2, Sparkles, LogOut, LayoutDashboard
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NotificationSetup } from "@/components/NotificationSetup";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 // ─── Contagem regressiva ENEM 2026 (01 Nov 2026) ───
 function useCountdown(target: Date) {
@@ -178,6 +180,7 @@ export default function Dashboard() {
   const materia = getMateriaHoje();
   const frase = getFraseHoje();
   const saudacao = getSaudacao();
+  const { scheduleDaily } = usePushNotifications();
 
   // Carrega dados de atividade sem registrar acesso automático
   const loadActivity = async (uid: string) => {
@@ -201,7 +204,11 @@ export default function Dashboard() {
     for (let i = counts.length - 1; i >= 0; i--) {
       if (counts[i] > 0) s++; else break;
     }
-    setStreak(s); // 0 se nunca clicou / quebrou a sequência
+    setStreak(s);
+    // Persiste o streak no localStorage para o hook de notificações usar
+    localStorage.setItem("aprovia_streak", String(s));
+    // Agenda lembrete diário (só dispara se permissão já foi concedida)
+    scheduleDaily();
   };
 
   useEffect(() => {
@@ -353,6 +360,9 @@ export default function Dashboard() {
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
+            {/* Notificações */}
+            <NotificationSetup />
+
             {/* Streak */}
             <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all duration-300 ${
               streak > 0
