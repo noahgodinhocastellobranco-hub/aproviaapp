@@ -169,7 +169,7 @@ export default function Dashboard() {
   const [email, setEmail] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [streak, setStreak] = useState(1);
+  const [streak, setStreak] = useState(0);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [acessos, setAcessos] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -178,6 +178,31 @@ export default function Dashboard() {
   const materia = getMateriaHoje();
   const frase = getFraseHoje();
   const saudacao = getSaudacao();
+
+  // Carrega dados de atividade sem registrar acesso automático
+  const loadActivity = async (uid: string) => {
+    const dates = getLast7Dates();
+    const sevenDaysAgo = dates[0];
+    const { data: activityData } = await supabase
+      .from("user_activity")
+      .select("date, actions_count")
+      .eq("user_id", uid)
+      .gte("date", sevenDaysAgo)
+      .order("date");
+
+    const map: Record<string, number> = {};
+    activityData?.forEach((r: { date: string; actions_count: number }) => { map[r.date] = r.actions_count; });
+    const counts = dates.map((d) => map[d] ?? 0);
+    setAcessos(counts);
+
+    // Streak: conta dias consecutivos de uso (clicar "Começar a Estudar")
+    // Se não clicou hoje, não conta hoje
+    let s = 0;
+    for (let i = counts.length - 1; i >= 0; i--) {
+      if (counts[i] > 0) s++; else break;
+    }
+    setStreak(s); // 0 se nunca clicou / quebrou a sequência
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -197,31 +222,8 @@ export default function Dashboard() {
         setAvatarUrl(urlData.publicUrl);
       }
 
-      // Registra acesso ao dashboard como atividade
-      await supabase.rpc("increment_user_activity", { p_user_id: uid });
-
-      // Busca atividade dos últimos 7 dias
-      const dates = getLast7Dates();
-      const sevenDaysAgo = dates[0];
-      const { data: activityData } = await supabase
-        .from("user_activity")
-        .select("date, actions_count")
-        .eq("user_id", uid)
-        .gte("date", sevenDaysAgo)
-        .order("date");
-
-      // Monta array de 7 posições com os valores reais
-      const map: Record<string, number> = {};
-      activityData?.forEach((r: { date: string; actions_count: number }) => { map[r.date] = r.actions_count; });
-      const counts = dates.map((d) => map[d] ?? 0);
-      setAcessos(counts);
-
-      // Calcula streak (dias consecutivos até hoje)
-      let s = 0;
-      for (let i = counts.length - 1; i >= 0; i--) {
-        if (counts[i] > 0) s++; else break;
-      }
-      setStreak(Math.max(s, 1));
+      // Carrega atividade (sem registrar acesso automático)
+      await loadActivity(uid);
     });
   }, [navigate]);
 
@@ -239,6 +241,17 @@ export default function Dashboard() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
+  };
+
+  // Clique em "Começar a Estudar": registra 1 atividade por dia e navega
+  const handleComecaEstudar = async () => {
+    if (userId) {
+      // Registra a atividade (upsert no banco: máx 1 incremento por dia pelo próprio banco)
+      await supabase.rpc("increment_user_activity", { p_user_id: userId });
+      // Recarrega para refletir novo streak
+      await loadActivity(userId);
+    }
+    navigate("/redacao");
   };
 
   const primeiroNome = nome?.split(" ")[0] ?? email?.split("@")[0] ?? "Aluno";
@@ -316,9 +329,13 @@ export default function Dashboard() {
           {/* Right actions */}
           <div className="flex items-center gap-2">
             {/* Streak */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-100 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800">
-              <Flame className="h-4 w-4 text-orange-500" />
-              <span className="text-sm font-bold text-orange-600 dark:text-orange-400">{streak}</span>
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all duration-300 ${
+              streak > 0
+                ? "bg-orange-100 dark:bg-orange-950/40 border-orange-200 dark:border-orange-800"
+                : "bg-muted border-border"
+            }`}>
+              <Flame className={`h-4 w-4 transition-colors duration-300 ${streak > 0 ? "text-orange-500" : "text-muted-foreground"}`} />
+              <span className={`text-sm font-bold transition-colors duration-300 ${streak > 0 ? "text-orange-600 dark:text-orange-400" : "text-muted-foreground"}`}>{streak}</span>
             </div>
 
             {/* Suporte */}
@@ -366,7 +383,7 @@ export default function Dashboard() {
           <Button
             size="lg"
             className="text-base px-10 py-6 rounded-xl font-bold uppercase tracking-wide gap-2"
-            onClick={() => navigate("/redacao")}
+            onClick={handleComecaEstudar}
           >
             <Rocket className="h-5 w-5" />
             COMECE A ESTUDAR
@@ -467,7 +484,7 @@ export default function Dashboard() {
           <Button
             size="lg"
             className="py-6 rounded-xl font-bold gap-2 text-base"
-            onClick={() => navigate("/redacao")}
+            onClick={handleComecaEstudar}
           >
             <Rocket className="h-5 w-5" />
             Comece a Estudar
