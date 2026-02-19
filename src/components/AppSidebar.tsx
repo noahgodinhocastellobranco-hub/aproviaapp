@@ -1,13 +1,13 @@
-import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, ExternalLink, Timer, HelpCircle, ClipboardList, FolderDown, GraduationCap, Trophy, Search, Brain, Calendar } from "lucide-react";
-import { NavLink } from "react-router-dom";
-import { PWAStatusBar } from "./PWAStatusBar";
+import { useState, useEffect, useRef } from "react";
+import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, Timer, HelpCircle, ClipboardList, FolderDown, GraduationCap, Trophy, Search, Brain, Calendar, Settings, LogOut, LayoutDashboard } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuItem,
   SidebarTrigger,
@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainItems = [
-  { title: "Início", url: "/", icon: Home },
   { title: "Chat AprovI.A", url: "/chat", icon: MessageCircle },
   { title: "Redação", url: "/redacao", icon: PenTool },
   { title: "Professora Virtual", url: "/professora-virtual", icon: GraduationCap },
@@ -63,6 +62,50 @@ function NavItem({ item }: { item: { title: string; url: string; icon: React.Com
 export function AppSidebar() {
   const { open } = useSidebar();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+
+  const [nome, setNome] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      const uid = session.user.id;
+      setEmail(session.user.email ?? null);
+
+      const { data } = await supabase.from("profiles").select("nome").eq("id", uid).single();
+      if (data?.nome) setNome(data.nome);
+
+      const { data: files } = await supabase.storage.from("avatars").list(`${uid}`);
+      if (files && files.length > 0) {
+        const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(`${uid}/${files[0].name}`);
+        setAvatarUrl(urlData.publicUrl);
+      }
+    };
+    load();
+  }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
+
+  const primeiroNome = nome?.split(" ")[0] ?? email?.split("@")[0] ?? "Aluno";
 
   return (
     <Sidebar
@@ -70,18 +113,82 @@ export function AppSidebar() {
       className="border-r border-border bg-card"
     >
       <SidebarHeader className="p-4 pb-3 bg-card">
-        <div className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5">
+        {/* Logo AprovI.A */}
+        <div className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5 mb-2">
           <div className="flex items-center justify-center w-11 h-11 rounded-xl shadow-sm bg-primary">
             <Brain className="h-6 w-6 text-primary-foreground" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-base font-bold leading-tight text-primary">
-              AprovI.A
-            </h2>
+            <h2 className="text-base font-bold leading-tight text-primary">AprovI.A</h2>
             <p className="text-[11px] leading-tight text-primary/60">Assistente ENEM</p>
           </div>
           {isMobile && (
             <SidebarTrigger className="flex-shrink-0 h-8 w-8 rounded-lg text-primary" />
+          )}
+        </div>
+
+        {/* Perfil do usuário com dropdown */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setDropdownOpen((v) => !v)}
+            className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/60 transition-colors"
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="avatar" className="w-9 h-9 rounded-full object-cover border border-border shrink-0" />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm border border-primary/30 shrink-0">
+                {primeiroNome[0]?.toUpperCase()}
+              </div>
+            )}
+            <div className="leading-none text-left flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate">{primeiroNome}</p>
+              <div className="flex items-center gap-1 mt-0.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">PRO Ativo</p>
+              </div>
+            </div>
+          </button>
+
+          {/* Dropdown */}
+          {dropdownOpen && (
+            <div className="absolute left-0 top-full mt-1 w-full rounded-2xl border border-border bg-card shadow-xl z-50 overflow-hidden">
+              <div className="px-4 py-3 border-b border-border">
+                <p className="font-semibold text-foreground text-sm truncate">{nome ?? primeiroNome}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">{email}</p>
+              </div>
+              <div className="py-1">
+                <button
+                  onClick={() => { setDropdownOpen(false); navigate("/configuracoes"); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted/60 transition-colors"
+                >
+                  <Settings className="h-4 w-4 text-muted-foreground shrink-0" />
+                  Configurações
+                </button>
+                <button
+                  onClick={() => { setDropdownOpen(false); navigate("/suporte"); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted/60 transition-colors"
+                >
+                  <MessageCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+                  Suporte
+                </button>
+                <button
+                  onClick={() => { setDropdownOpen(false); navigate("/vendas"); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted/60 transition-colors"
+                >
+                  <LayoutDashboard className="h-4 w-4 text-muted-foreground shrink-0" />
+                  Painel Admin
+                </button>
+              </div>
+              <div className="border-t border-border py-1">
+                <button
+                  onClick={() => { setDropdownOpen(false); handleLogout(); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                >
+                  <LogOut className="h-4 w-4 shrink-0" />
+                  Sair
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </SidebarHeader>
@@ -127,15 +234,13 @@ export function AppSidebar() {
             <ThemeToggle />
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <a
-              href="https://aproviapagina.lovable.app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-primary/10 transition-all duration-200 no-underline text-primary"
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-primary/10 transition-all duration-200 text-primary"
             >
-              <ExternalLink className="h-4 w-4 flex-shrink-0" />
+              <Home className="h-4 w-4 flex-shrink-0" />
               <span className="text-sm font-medium">Página Inicial</span>
-            </a>
+            </button>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
