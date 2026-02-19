@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, Timer, HelpCircle, ClipboardList, FolderDown, GraduationCap, Trophy, Search, Brain, Calendar, Settings, LogOut, LayoutDashboard } from "lucide-react";
+import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, Timer, HelpCircle, ClipboardList, FolderDown, GraduationCap, Trophy, Search, Calendar, Settings, LogOut, LayoutDashboard } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -113,19 +113,11 @@ export function AppSidebar() {
       className="border-r border-border bg-card"
     >
       <SidebarHeader className="p-4 pb-3 bg-card">
-        {/* Logo AprovI.A */}
-        <div className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5 mb-2">
-          <div className="flex items-center justify-center w-11 h-11 rounded-xl shadow-sm bg-primary">
-            <Brain className="h-6 w-6 text-primary-foreground" />
+        {isMobile && (
+          <div className="flex justify-end mb-1">
+            <SidebarTrigger className="h-8 w-8 rounded-lg text-primary" />
           </div>
-          <div className="flex-1 min-w-0">
-            <h2 className="text-base font-bold leading-tight text-primary">AprovI.A</h2>
-            <p className="text-[11px] leading-tight text-primary/60">Assistente ENEM</p>
-          </div>
-          {isMobile && (
-            <SidebarTrigger className="flex-shrink-0 h-8 w-8 rounded-lg text-primary" />
-          )}
-        </div>
+        )}
 
         {/* Perfil do usuário com dropdown */}
         <div className="relative" ref={dropdownRef}>
