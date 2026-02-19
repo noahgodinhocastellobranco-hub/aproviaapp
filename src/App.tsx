@@ -21,6 +21,7 @@ import ConsultarCurso from "./pages/ConsultarCurso";
 import Pomodoro from "./pages/Pomodoro";
 import Auth from "./pages/Auth";
 import Rotina from "./pages/Rotina";
+import Precos from "./pages/Precos";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
           {/* Sales / Auth pages — no sidebar */}
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/precos" element={<Precos />} />
 
           {/* App pages — with sidebar Layout */}
           <Route
