@@ -9,6 +9,7 @@ import {
   Clock, HelpCircle, MessageCircle, ChevronDown, ChevronUp,
   ArrowRight, Sparkles, X, CheckCheck, BarChart2,
 } from "lucide-react";
+import logoFull from "@/assets/logo-full.png";
 
 
 const faqs = [
@@ -214,12 +215,9 @@ export default function Index() {
           </span>
         </div>
 
-        {/* Brand typography */}
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <span className="text-5xl md:text-6xl">🧠</span>
-          <span className="text-5xl md:text-7xl font-extrabold text-primary tracking-tight">
-            AprovI.A
-          </span>
+        {/* Logo image */}
+        <div className="flex justify-center mb-6">
+          <img src={logoFull} alt="AprovI.A" className="h-20 md:h-28" />
         </div>
 
         {/* Headline */}
