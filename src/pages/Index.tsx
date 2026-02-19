@@ -256,7 +256,8 @@ export default function Index() {
           ].map((p) => (
             <div
               key={p.text}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-border bg-card text-sm font-medium shadow-sm"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-border bg-card text-sm font-medium shadow-sm cursor-default
+                         transition-all duration-200 hover:scale-105 hover:shadow-md hover:border-primary/40 hover:bg-primary/5"
             >
               <span className="text-primary">{p.icon}</span>
               {p.text}
@@ -268,18 +269,18 @@ export default function Index() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
           <Button
             size="lg"
-            className="text-base px-8 py-6 rounded-xl font-bold uppercase tracking-wide gap-2"
+            className="text-base px-8 py-6 rounded-xl font-bold uppercase tracking-wide gap-2 transition-all duration-200 hover:scale-105 hover:shadow-lg"
             onClick={() => navigate("/auth")}
           >
             <Sparkles className="h-5 w-5" />
             COMEÇAR AGORA
-            <ArrowRight className="h-5 w-5" />
+            <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
           </Button>
           <Button
             asChild
             size="lg"
             variant="outline"
-            className="text-base px-8 py-6 rounded-xl font-medium"
+            className="text-base px-8 py-6 rounded-xl font-medium transition-all duration-200 hover:scale-105 hover:shadow-md hover:border-primary hover:text-primary"
           >
             <Link to="/auth">Já tenho conta</Link>
           </Button>
@@ -306,9 +307,10 @@ export default function Index() {
           ].map((c) => (
             <div
               key={c.title}
-              className="flex flex-col items-center text-center gap-2 p-6 rounded-2xl border border-border bg-card shadow-sm"
+              className="flex flex-col items-center text-center gap-2 p-6 rounded-2xl border border-border bg-card shadow-sm
+                         transition-all duration-300 hover:scale-105 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1 cursor-default"
             >
-              {c.icon}
+              <div className="transition-transform duration-300 hover:scale-110">{c.icon}</div>
               <p className="font-semibold text-foreground">{c.title}</p>
               <p className="text-sm text-muted-foreground">{c.sub}</p>
             </div>
@@ -371,11 +373,12 @@ export default function Index() {
               desc: "Estude de forma inteligente, focando nos conteúdos que mais caem no ENEM e nas suas maiores dificuldades.",
             },
           ].map((f) => (
-            <div key={f.title} className="p-6 rounded-2xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow">
-              <div className={`inline-flex p-3 rounded-xl ${f.bg} mb-4`}>
+            <div key={f.title} className="p-6 rounded-2xl border border-border bg-card shadow-sm
+                                           transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 group">
+              <div className={`inline-flex p-3 rounded-xl ${f.bg} mb-4 transition-transform duration-300 group-hover:scale-110`}>
                 {f.icon}
               </div>
-              <h3 className="font-bold text-foreground mb-2">{f.title}</h3>
+              <h3 className="font-bold text-foreground mb-2 group-hover:text-primary transition-colors duration-200">{f.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
             </div>
           ))}
@@ -407,19 +410,19 @@ export default function Index() {
             <Link
               key={t.title}
               to={t.href}
-              className={`relative p-5 rounded-2xl border bg-card hover:shadow-lg transition-all group ${
-                t.highlight ? "border-emerald-400 border-2" : "border-border"
-              }`}
+              className={`relative p-5 rounded-2xl border bg-card transition-all duration-300 group
+                hover:shadow-xl hover:-translate-y-1.5 hover:border-primary/40
+                ${t.highlight ? "border-emerald-400 border-2 hover:border-emerald-500" : "border-border"}`}
             >
               {t.badge && (
                 <span className="absolute top-3 right-3 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
                   {t.badge}
                 </span>
               )}
-              <div className={`inline-flex p-3 rounded-xl ${t.bg} mb-3`}>
+              <div className={`inline-flex p-3 rounded-xl ${t.bg} mb-3 transition-transform duration-300 group-hover:scale-110`}>
                 <span className={t.color}>{t.icon}</span>
               </div>
-              <h3 className="font-bold text-foreground mb-1 text-sm leading-snug">{t.title}</h3>
+              <h3 className="font-bold text-foreground mb-1 text-sm leading-snug group-hover:text-primary transition-colors duration-200">{t.title}</h3>
               <p className="text-xs text-muted-foreground leading-relaxed mb-3">{t.desc}</p>
               <div className="space-y-1">
                 <div className="flex items-center gap-1.5 text-xs text-primary font-medium">
@@ -485,7 +488,8 @@ export default function Index() {
                   { icon: <TrendingUp className="h-4 w-4 rotate-180" />, text: "Não ter feedback sobre sua evolução real" },
                   { icon: <AlertTriangle className="h-4 w-4" />, text: "Perder tempo com conteúdo que não cai na prova" },
                 ].map((item) => (
-                  <div key={item.text} className="flex items-start gap-3 p-3 rounded-xl bg-muted/50 text-sm text-muted-foreground">
+                  <div key={item.text} className="flex items-start gap-3 p-3 rounded-xl bg-muted/50 text-sm text-muted-foreground
+                                                   transition-all duration-200 hover:bg-muted hover:translate-x-1">
                     <span className="text-muted-foreground/60 mt-0.5 shrink-0">{item.icon}</span>
                     {item.text}
                   </div>
@@ -510,7 +514,8 @@ export default function Index() {
                   "IA treinada especificamente para o ENEM",
                   "Estude de qualquer lugar, no seu ritmo",
                 ].map((item) => (
-                  <div key={item} className="flex items-center gap-3 p-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-sm font-medium text-emerald-800 dark:text-emerald-300">
+                  <div key={item} className="flex items-center gap-3 p-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-sm font-medium text-emerald-800 dark:text-emerald-300
+                                              transition-all duration-200 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 hover:translate-x-1 hover:shadow-sm">
                     <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                     {item}
                   </div>
@@ -533,10 +538,10 @@ export default function Index() {
           </p>
           <Button
             size="lg"
-            className="text-base px-10 py-6 rounded-xl font-bold gap-2 mb-4"
+            className="text-base px-10 py-6 rounded-xl font-bold gap-2 mb-4 transition-all duration-200 hover:scale-105 hover:shadow-lg"
             onClick={() => navigate("/auth")}
           >
-            Começar Agora <ArrowRight className="h-5 w-5" />
+            Começar Agora <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
           </Button>
           <div className="flex flex-wrap justify-center gap-5 mt-4">
             {["7 dias de garantia", "Cancele quando quiser"].map((t) => (
@@ -567,26 +572,27 @@ export default function Index() {
           {faqs.map((faq, i) => (
             <div
               key={i}
-              className="rounded-2xl border border-border bg-card overflow-hidden"
+              className="rounded-2xl border border-border bg-card overflow-hidden transition-all duration-200 hover:border-primary/30 hover:shadow-md"
             >
               <button
-                className="w-full flex items-center justify-between gap-4 p-5 text-left font-semibold text-foreground hover:bg-muted/50 transition-colors"
+                className="w-full flex items-center justify-between gap-4 p-5 text-left font-semibold text-foreground hover:bg-muted/50 transition-colors group"
                 onClick={() => setOpenFaq(openFaq === i ? null : i)}
               >
                 <div className="flex items-center gap-3">
-                  <span className="inline-flex items-center justify-center h-7 w-7 rounded-full bg-primary/10 text-primary text-sm font-bold shrink-0">
+                  <span className="inline-flex items-center justify-center h-7 w-7 rounded-full bg-primary/10 text-primary text-sm font-bold shrink-0
+                                   transition-all duration-200 group-hover:bg-primary group-hover:text-primary-foreground">
                     {i + 1}
                   </span>
                   {faq.q}
                 </div>
                 {openFaq === i ? (
-                  <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0 transition-transform duration-200" />
                 ) : (
-                  <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0 transition-transform duration-200" />
                 )}
               </button>
               {openFaq === i && (
-                <div className="px-5 pb-5 text-sm text-muted-foreground leading-relaxed border-t border-border pt-4">
+                <div className="px-5 pb-5 text-sm text-muted-foreground leading-relaxed border-t border-border pt-4 animate-fade-in">
                   {faq.a}
                 </div>
               )}
@@ -645,7 +651,7 @@ export default function Index() {
           <Button
             size="lg"
             variant="secondary"
-            className="text-base px-10 py-6 rounded-xl font-bold gap-2 bg-white text-primary hover:bg-white/90"
+            className="text-base px-10 py-6 rounded-xl font-bold gap-2 bg-white text-primary hover:bg-white/90 transition-all duration-200 hover:scale-105 hover:shadow-xl"
             onClick={() => navigate("/auth")}
           >
             Começar Agora <ArrowRight className="h-5 w-5" />
