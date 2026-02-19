@@ -1,6 +1,8 @@
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, ArrowLeft, Sparkles, MessageSquare, Clipboard, BookOpen, FileText, TrendingUp, Shield } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { CheckCircle2, ArrowLeft, Sparkles, Shield } from "lucide-react";
 
 const includes = [
   { left: "Correção ilimitada de redações com IA", right: "Chat inteligente para tirar dúvidas" },
@@ -9,8 +11,22 @@ const includes = [
   { left: "Suporte prioritário", right: "Atualizações constantes de conteúdo" },
 ];
 
+const CAKTO_URL = "https://pay.cakto.com.br/3c7yw4k_710255";
+
 export default function Precos() {
   const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session?.user);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setIsLoggedIn(!!session?.user);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -89,14 +105,25 @@ export default function Precos() {
             </div>
 
             {/* CTA */}
-            <Button
-              size="lg"
-              className="w-full text-base py-6 rounded-xl font-bold gap-2"
-              onClick={() => navigate("/auth")}
-            >
-              Fazer Login para Comprar
-              <Sparkles className="h-4 w-4" />
-            </Button>
+            {isLoggedIn ? (
+              <Button
+                size="lg"
+                className="w-full text-base py-6 rounded-xl font-bold gap-2"
+                onClick={() => window.open(CAKTO_URL, "_blank")}
+              >
+                Comprar Agora
+                <Sparkles className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button
+                size="lg"
+                className="w-full text-base py-6 rounded-xl font-bold gap-2"
+                onClick={() => navigate("/auth")}
+              >
+                Fazer Login para Comprar
+                <Sparkles className="h-4 w-4" />
+              </Button>
+            )}
 
             {/* Guarantee */}
             <div className="flex items-center justify-center gap-2 mt-4 text-xs text-muted-foreground">

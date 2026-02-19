@@ -134,6 +134,48 @@ export type Database = {
         }
         Relationships: []
       }
+      vendas: {
+        Row: {
+          created_at: string
+          email_cliente: string | null
+          evento: string | null
+          id: string
+          moeda: string | null
+          nome_cliente: string | null
+          payload: Json | null
+          produto: string | null
+          status: string | null
+          transacao_id: string | null
+          valor: number | null
+        }
+        Insert: {
+          created_at?: string
+          email_cliente?: string | null
+          evento?: string | null
+          id?: string
+          moeda?: string | null
+          nome_cliente?: string | null
+          payload?: Json | null
+          produto?: string | null
+          status?: string | null
+          transacao_id?: string | null
+          valor?: number | null
+        }
+        Update: {
+          created_at?: string
+          email_cliente?: string | null
+          evento?: string | null
+          id?: string
+          moeda?: string | null
+          nome_cliente?: string | null
+          payload?: Json | null
+          produto?: string | null
+          status?: string | null
+          transacao_id?: string | null
+          valor?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
