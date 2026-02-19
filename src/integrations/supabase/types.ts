@@ -19,18 +19,21 @@ export type Database = {
           created_at: string | null
           email: string | null
           id: string
+          is_premium: boolean
           nome: string | null
         }
         Insert: {
           created_at?: string | null
           email?: string | null
           id: string
+          is_premium?: boolean
           nome?: string | null
         }
         Update: {
           created_at?: string | null
           email?: string | null
           id?: string
+          is_premium?: boolean
           nome?: string | null
         }
         Relationships: []
