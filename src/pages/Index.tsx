@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { useTheme } from "next-themes";
 import {
   Zap, Brain, Star, CheckCircle2, FileText, MessageSquare,
   Target, BookOpen, PenTool, TrendingUp, Timer, Search,
   Clipboard, GraduationCap, Lightbulb, Shield, AlertTriangle,
   Clock, HelpCircle, MessageCircle, ChevronDown, ChevronUp,
-  ArrowRight, Sparkles, X, CheckCheck, BarChart2,
+  ArrowRight, Sparkles, X, CheckCheck, BarChart2, Moon, Sun,
 } from "lucide-react";
 
 
@@ -191,12 +191,22 @@ export default function Index() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const navigate = useNavigate();
 
+  const { theme, setTheme } = useTheme();
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* ─── NAV ─── */}
       <nav className="sticky top-0 z-50 bg-background">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-end gap-3">
-          <ThemeToggle />
+        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="h-9 w-9 rounded-md"
+          >
+            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          </Button>
           <Button asChild variant="outline" size="sm" className="rounded-md px-4 font-medium border border-border">
             <Link to="/auth">Login / Criar Conta</Link>
           </Button>
