@@ -21,11 +21,20 @@ export default function Auth() {
   const [nome, setNome] = useState("");
 
   useEffect(() => {
+    const redirectUser = async (userId: string) => {
+      const { data } = await supabase.from("profiles").select("is_premium").eq("id", userId).single();
+      if (data?.is_premium) {
+        navigate("/dashboard");
+      } else {
+        navigate("/precos");
+      }
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) navigate("/");
+      if (session?.user) redirectUser(session.user.id);
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) navigate("/");
+      if (session?.user) redirectUser(session.user.id);
     });
     return () => subscription.unsubscribe();
   }, [navigate]);

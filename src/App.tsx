@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
 import Install from "./pages/Install";
 import Dicas from "./pages/Dicas";
 import Simulados from "./pages/Simulados";
@@ -38,6 +39,7 @@ const App = () => (
         <Routes>
           {/* Sales / Auth pages — no sidebar */}
           <Route path="/" element={<Index />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/precos" element={<Precos />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
