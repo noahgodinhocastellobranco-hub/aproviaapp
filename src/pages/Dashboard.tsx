@@ -205,10 +205,11 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session?.user) { navigate("/auth"); return; }
-      const uid = session.user.id;
-      setEmail(session.user.email ?? null);
+    let initialized = false;
+
+    const initUser = async (uid: string, userEmail: string | undefined) => {
+      initialized = true;
+      setEmail(userEmail ?? null);
       setUserId(uid);
 
       // Fetch profile
@@ -224,7 +225,31 @@ export default function Dashboard() {
 
       // Carrega atividade (sem registrar acesso automático)
       await loadActivity(uid);
+    };
+
+    // onAuthStateChange garante que o token seja renovado automaticamente
+    // antes de decidir se redireciona ou não
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user && !initialized) {
+        initUser(session.user.id, session.user.email);
+      } else if (!session?.user && initialized) {
+        navigate("/auth");
+      }
     });
+
+    // getSession como fallback rápido (caso já tenha sessão ativa)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user && !initialized) {
+        initUser(session.user.id, session.user.email);
+      } else if (!session?.user) {
+        // Aguarda o onAuthStateChange tentar renovar o token (até 3s)
+        setTimeout(() => {
+          if (!initialized) navigate("/auth");
+        }, 3000);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   // Close dropdown on outside click
