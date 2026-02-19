@@ -231,7 +231,7 @@ export default function Index() {
               </Button>
 
               {/* Configurações */}
-              <Button variant="ghost" size="sm" className="gap-1.5 rounded-md px-3 hidden sm:flex" onClick={() => navigate("/chat")}>
+              <Button variant="ghost" size="sm" className="gap-1.5 rounded-md px-3 hidden sm:flex" onClick={() => navigate("/configuracoes")}>
                 <Settings className="h-4 w-4" />
                 <span>Configurações</span>
               </Button>

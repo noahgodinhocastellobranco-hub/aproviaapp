@@ -22,6 +22,7 @@ import Pomodoro from "./pages/Pomodoro";
 import Auth from "./pages/Auth";
 import Rotina from "./pages/Rotina";
 import Precos from "./pages/Precos";
+import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/precos" element={<Precos />} />
+          <Route path="/configuracoes" element={<Configuracoes />} />
 
           {/* App pages — with sidebar Layout */}
           <Route
