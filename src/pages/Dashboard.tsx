@@ -28,7 +28,7 @@ function useCountdown(target: Date) {
   return time;
 }
 
-// ─── Matéria do dia (determinística por dia) ───
+// ─── Matéria do dia (muda todo dia à meia-noite no horário local) ───
 const MATERIAS = [
   { emoji: "🎨", label: "Sociologia: Cultura e Identidade", dica: "Estude diversidade cultural, etnocentrismo e relativismo cultural.", href: "/materias" },
   { emoji: "📐", label: "Matemática: Funções do 2º Grau", dica: "Revise fórmula de Bhaskara e gráficos de parábola.", href: "/materias" },
@@ -44,10 +44,30 @@ const MATERIAS = [
   { emoji: "🔢", label: "Matemática: Probabilidade e Estatística", dica: "Treine com gráficos, médias e problemas de probabilidade.", href: "/materias" },
   { emoji: "📝", label: "Redação: Texto Dissertativo-Argumentativo", dica: "Escreva uma redação e use nossa IA para corrigir!", href: "/redacao" },
   { emoji: "🗺️", label: "Geografia: Meio Ambiente e Sustentabilidade", dica: "Estude questões ambientais globais e Conferências da ONU.", href: "/materias" },
+  { emoji: "🧪", label: "Química: Equilíbrio Químico", dica: "Revise Le Chatelier e solubilidade de substâncias.", href: "/materias" },
+  { emoji: "🦠", label: "Biologia: Evolução e Seleção Natural", dica: "Estude Darwin, neodarwinismo e especiação.", href: "/materias" },
+  { emoji: "⚖️", label: "Filosofia: Política e Cidadania", dica: "Revise contrato social, Locke, Rousseau e Montesquieu.", href: "/materias" },
+  { emoji: "🔭", label: "Física: Mecânica e Cinemática", dica: "Revise MRUV, leis de Newton e trabalho/energia.", href: "/materias" },
+  { emoji: "🏺", label: "História: Civilizações Antigas", dica: "Estude Grécia, Roma e suas influências no mundo moderno.", href: "/materias" },
+  { emoji: "🌊", label: "Geografia: Climatologia e Hidrografia", dica: "Estude climas do Brasil, rios e bacias hidrográficas.", href: "/materias" },
+  { emoji: "📏", label: "Matemática: Geometria Plana", dica: "Revise áreas, perímetros e Teorema de Pitágoras.", href: "/materias" },
+  { emoji: "💬", label: "Português: Figuras de Linguagem", dica: "Treine metáfora, metonímia, ironia e outras figuras.", href: "/materias" },
+  { emoji: "🧫", label: "Biologia: Citologia e Fisiologia", dica: "Estude estrutura celular, organelas e metabolismo.", href: "/materias" },
+  { emoji: "🌋", label: "Geografia: Geologia e Relevo", dica: "Revise placas tectônicas, vulcanismo e tipos de solo.", href: "/materias" },
+  { emoji: "💡", label: "Física: Termodinâmica", dica: "Revise leis da termodinâmica, calor e temperatura.", href: "/materias" },
+  { emoji: "🗣️", label: "Sociologia: Movimentos Sociais", dica: "Estude movimentos feministas, LGBTQ+, negros e trabalhadores.", href: "/materias" },
+  { emoji: "🌎", label: "História: América Latina", dica: "Foque em independências, revoluções e regimes militares.", href: "/materias" },
+  { emoji: "🔬", label: "Química: Eletroquímica", dica: "Revise eletrólise, pilhas e número de oxidação.", href: "/materias" },
+  { emoji: "📐", label: "Matemática: Trigonometria", dica: "Estude seno, cosseno, tangente e círculo trigonométrico.", href: "/materias" },
+  { emoji: "📚", label: "Português: Literatura Brasileira", dica: "Revise modernismo, romantismo e principais autores do ENEM.", href: "/materias" },
+  { emoji: "🌱", label: "Biologia: Botânica e Fotossíntese", dica: "Estude tipos de plantas, fotossíntese e respiração celular.", href: "/materias" },
 ];
+
 function getMateriaHoje() {
-  const day = Math.floor(Date.now() / 86400000);
-  return MATERIAS[day % MATERIAS.length];
+  const now = new Date();
+  // Usa ano + mês + dia local para mudar exatamente à meia-noite no horário do usuário
+  const diaDoAno = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+  return MATERIAS[diaDoAno % MATERIAS.length];
 }
 
 // ─── Frases motivacionais ───
