@@ -195,10 +195,10 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* ─── NAV ─── */}
-      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-end gap-3">
+      <nav className="sticky top-0 z-50 bg-background">
+        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-end gap-3">
           <ThemeToggle />
-          <Button asChild variant="outline" size="sm" className="rounded-full px-5">
+          <Button asChild variant="outline" size="sm" className="rounded-md px-4 font-medium border border-border">
             <Link to="/auth">Login / Criar Conta</Link>
           </Button>
         </div>
