@@ -270,7 +270,7 @@ export default function Index() {
           <Button
             size="lg"
             className="text-base px-8 py-6 rounded-xl font-bold uppercase tracking-wide gap-2 transition-all duration-200 hover:scale-105 hover:shadow-lg"
-            onClick={() => navigate("/auth")}
+            onClick={() => navigate("/precos")}
           >
             <Sparkles className="h-5 w-5" />
             COMEÇAR AGORA
@@ -445,7 +445,7 @@ export default function Index() {
           <Button
             size="lg"
             className="text-base px-10 py-6 rounded-xl font-bold gap-2"
-            onClick={() => navigate("/auth")}
+            onClick={() => navigate("/precos")}
           >
             <Sparkles className="h-5 w-5" />
             Quero Todas Essas Ferramentas
@@ -539,7 +539,7 @@ export default function Index() {
           <Button
             size="lg"
             className="text-base px-10 py-6 rounded-xl font-bold gap-2 mb-4 transition-all duration-200 hover:scale-105 hover:shadow-lg"
-            onClick={() => navigate("/auth")}
+            onClick={() => navigate("/precos")}
           >
             Começar Agora <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
           </Button>
@@ -652,7 +652,7 @@ export default function Index() {
             size="lg"
             variant="secondary"
             className="text-base px-10 py-6 rounded-xl font-bold gap-2 bg-white text-primary hover:bg-white/90 transition-all duration-200 hover:scale-105 hover:shadow-xl"
-            onClick={() => navigate("/auth")}
+            onClick={() => navigate("/precos")}
           >
             Começar Agora <ArrowRight className="h-5 w-5" />
           </Button>
