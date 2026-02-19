@@ -84,7 +84,7 @@ export default function Precos() {
       {/* Back */}
       <div className="max-w-4xl mx-auto px-6 pt-6">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/")}
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
