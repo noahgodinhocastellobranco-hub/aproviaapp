@@ -5,7 +5,7 @@ import { useTheme } from "next-themes";
 import {
   PenTool, Brain, FileText, GraduationCap, Timer, Star,
   Rocket, Settings, MessageCircle, Flame, Moon, Sun,
-  CheckCircle2, Sparkles, LogOut, BarChart2, Target
+  CheckCircle2, Sparkles, LogOut, LayoutDashboard
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -149,27 +149,49 @@ export default function Dashboard() {
   const { theme, setTheme } = useTheme();
   const [nome, setNome] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [streak, setStreak] = useState(1);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const enem2026 = new Date("2026-11-01T08:00:00");
   const countdown = useCountdown(enem2026);
   const materia = getMateriaHoje();
   const frase = getFraseHoje();
   const saudacao = getSaudacao();
 
-  // Simulated weekly access (would come from DB in production)
   const acessos = [0, 1, 0, 2, 3, 5, 8];
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session?.user) { navigate("/auth"); return; }
+      const uid = session.user.id;
       setEmail(session.user.email ?? null);
-      // Fetch profile name
-      supabase.from("profiles").select("nome").eq("id", session.user.id).single()
-        .then(({ data }) => {
-          if (data?.nome) setNome(data.nome);
-        });
+      setUserId(uid);
+
+      // Fetch profile
+      const { data } = await supabase.from("profiles").select("nome").eq("id", uid).single();
+      if (data?.nome) setNome(data.nome);
+
+      // Fetch avatar
+      const { data: files } = await supabase.storage.from("avatars").list(`${uid}`);
+      if (files && files.length > 0) {
+        const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(`${uid}/${files[0].name}`);
+        setAvatarUrl(urlData.publicUrl);
+      }
     });
   }, [navigate]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -184,18 +206,75 @@ export default function Dashboard() {
       {/* ─── HEADER ─── */}
       <header className="sticky top-0 z-50 bg-background border-b border-border">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-          {/* Avatar + nome + badge PRO */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm border border-primary/30">
-              {primeiroNome[0]?.toUpperCase()}
-            </div>
-            <div className="leading-none">
-              <p className="text-sm font-semibold text-foreground">{primeiroNome}</p>
-              <div className="flex items-center gap-1 mt-0.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">PRO Ativo</p>
+
+          {/* Avatar + nome + badge PRO — clicável para dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setDropdownOpen((v) => !v)}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
+              {/* Avatar */}
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="avatar" className="w-9 h-9 rounded-full object-cover border border-border" />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm border border-primary/30">
+                  {primeiroNome[0]?.toUpperCase()}
+                </div>
+              )}
+              <div className="leading-none text-left">
+                <p className="text-sm font-semibold text-foreground">{primeiroNome}</p>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">PRO Ativo</p>
+                </div>
               </div>
-            </div>
+            </button>
+
+            {/* Dropdown menu */}
+            {dropdownOpen && (
+              <div className="absolute left-0 top-12 w-64 rounded-2xl border border-border bg-card shadow-xl z-50 overflow-hidden">
+                {/* Info header */}
+                <div className="px-4 py-3 border-b border-border">
+                  <p className="font-semibold text-foreground text-sm">{nome ?? primeiroNome}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{email}</p>
+                </div>
+
+                {/* Options */}
+                <div className="py-1.5">
+                  <button
+                    onClick={() => { setDropdownOpen(false); navigate("/configuracoes"); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted/60 transition-colors"
+                  >
+                    <Settings className="h-4 w-4 text-muted-foreground" />
+                    Configurações
+                  </button>
+                  <button
+                    onClick={() => { setDropdownOpen(false); navigate("/suporte"); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted/60 transition-colors"
+                  >
+                    <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                    Suporte
+                  </button>
+                  <button
+                    onClick={() => { setDropdownOpen(false); navigate("/vendas"); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted/60 transition-colors"
+                  >
+                    <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
+                    Painel Admin
+                  </button>
+                </div>
+
+                <div className="border-t border-border py-1.5">
+                  <button
+                    onClick={() => { setDropdownOpen(false); handleLogout(); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sair
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right actions */}
@@ -219,10 +298,6 @@ export default function Dashboard() {
               <Moon className="absolute h-4 w-4 rotate-90 scale-0 dark:rotate-0 dark:scale-100 transition-all" />
             </Button>
 
-            {/* Logout */}
-            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground" onClick={handleLogout}>
-              <LogOut className="h-4 w-4" />
-            </Button>
           </div>
         </div>
       </header>
