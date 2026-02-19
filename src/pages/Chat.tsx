@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { trackActivity } from "@/hooks/useTrackActivity";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,7 @@ export default function Chat() {
     setInput("");
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setLoading(true);
+    trackActivity(); // +1 atividade ao enviar mensagem no chat
 
     try {
       const resp = await fetch(CHAT_URL, {

@@ -104,10 +104,9 @@ const PRO_TOOLS = [
   { icon: <Star className="h-8 w-8 text-primary" />, title: "Plano de Estudos", desc: "Baseado nas suas dificuldades", href: "/rotina" },
 ];
 
-// ─── Gráfico de acesso simples (últimos 7 dias) ───
-function AccessChart({ acessos }: { acessos: number[] }) {
+// ─── Gráfico de acesso real (últimos 7 dias) ───
+function AccessChart({ acessos, dias }: { acessos: number[]; dias: string[] }) {
   const max = Math.max(...acessos, 1);
-  const dias = ["Sex", "Sáb", "Dom", "Seg", "Ter", "Qua", "Qui"];
   const total = acessos.reduce((a, b) => a + b, 0);
   return (
     <div className="rounded-2xl border border-border bg-card p-5 h-full">
@@ -122,7 +121,7 @@ function AccessChart({ acessos }: { acessos: number[] }) {
         {acessos.map((v, i) => (
           <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
             <div
-              className="w-full rounded-t bg-primary/20 relative"
+              className="w-full rounded-t bg-primary/20 relative transition-all duration-500"
               style={{ height: `${(v / max) * 100}%`, minHeight: v > 0 ? "4px" : "0" }}
             >
               {i === acessos.length - 1 && v > 0 && (
@@ -133,8 +132,8 @@ function AccessChart({ acessos }: { acessos: number[] }) {
         ))}
       </div>
       <div className="flex gap-1.5">
-        {dias.map((d) => (
-          <div key={d} className="flex-1 text-center text-[10px] text-muted-foreground">{d}</div>
+        {dias.map((d, i) => (
+          <div key={i} className={`flex-1 text-center text-[10px] ${i === dias.length - 1 ? "text-primary font-bold" : "text-muted-foreground"}`}>{d}</div>
         ))}
       </div>
       <div className="mt-3 text-xs text-muted-foreground">
@@ -142,6 +141,25 @@ function AccessChart({ acessos }: { acessos: number[] }) {
       </div>
     </div>
   );
+}
+
+
+// ─── Últimos 7 dias (nomes dos dias) ───
+function getLast7Days(): string[] {
+  const dias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return dias[d.getDay()];
+  });
+}
+
+function getLast7Dates(): string[] {
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return d.toISOString().split("T")[0];
+  });
 }
 
 export default function Dashboard() {
@@ -153,14 +171,13 @@ export default function Dashboard() {
   const [userId, setUserId] = useState<string | null>(null);
   const [streak, setStreak] = useState(1);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [acessos, setAcessos] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const enem2026 = new Date("2026-11-01T08:00:00");
   const countdown = useCountdown(enem2026);
   const materia = getMateriaHoje();
   const frase = getFraseHoje();
   const saudacao = getSaudacao();
-
-  const acessos = [0, 1, 0, 2, 3, 5, 8];
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -179,6 +196,32 @@ export default function Dashboard() {
         const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(`${uid}/${files[0].name}`);
         setAvatarUrl(urlData.publicUrl);
       }
+
+      // Registra acesso ao dashboard como atividade
+      await supabase.rpc("increment_user_activity", { p_user_id: uid });
+
+      // Busca atividade dos últimos 7 dias
+      const dates = getLast7Dates();
+      const sevenDaysAgo = dates[0];
+      const { data: activityData } = await supabase
+        .from("user_activity")
+        .select("date, actions_count")
+        .eq("user_id", uid)
+        .gte("date", sevenDaysAgo)
+        .order("date");
+
+      // Monta array de 7 posições com os valores reais
+      const map: Record<string, number> = {};
+      activityData?.forEach((r: { date: string; actions_count: number }) => { map[r.date] = r.actions_count; });
+      const counts = dates.map((d) => map[d] ?? 0);
+      setAcessos(counts);
+
+      // Calcula streak (dias consecutivos até hoje)
+      let s = 0;
+      for (let i = counts.length - 1; i >= 0; i--) {
+        if (counts[i] > 0) s++; else break;
+      }
+      setStreak(Math.max(s, 1));
     });
   }, [navigate]);
 
@@ -396,7 +439,7 @@ export default function Dashboard() {
           </div>
 
           {/* Gráfico de desempenho */}
-          <AccessChart acessos={acessos} />
+          <AccessChart acessos={acessos} dias={getLast7Days()} />
         </div>
 
         {/* ─── FERRAMENTAS PRO ─── */}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { trackActivity } from "@/hooks/useTrackActivity";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -124,6 +125,7 @@ export default function Redacao() {
       if (error) throw error;
 
       setResultado(data);
+      trackActivity(); // +1 atividade ao corrigir redação
       toast({
         title: "Redação avaliada!",
         description: "Confira sua nota e feedback abaixo.",
