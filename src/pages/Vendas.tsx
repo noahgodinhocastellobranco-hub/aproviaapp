@@ -63,12 +63,19 @@ export default function Vendas() {
   };
 
   useEffect(() => {
-    // Check auth
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Check auth + admin role
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session?.user) { navigate("/auth"); return; }
-    });
 
-    loadVendas();
+      const { data: isAdmin } = await supabase.rpc("has_role", {
+        _user_id: session.user.id,
+        _role: "admin",
+      });
+
+      if (!isAdmin) { navigate("/dashboard"); return; }
+
+      loadVendas();
+    });
 
     // Realtime subscription
     const channel = supabase
