@@ -173,12 +173,12 @@ export default function Vendas() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Data</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Cliente</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Email</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Valor</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">ID</th>
+                     <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Data</th>
+                     <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Nome Completo</th>
+                     <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Email Completo</th>
+                     <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Valor</th>
+                     <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Status</th>
+                     <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">ID Transação</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -186,14 +186,14 @@ export default function Vendas() {
                     <tr key={v.id} className={`border-b border-border last:border-0 hover:bg-muted/20 transition-colors ${i === 0 ? "bg-emerald-50/50 dark:bg-emerald-950/10" : ""}`}>
                       <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">{formatDate(v.created_at)}</td>
                       <td className="px-4 py-3 font-medium text-foreground">{v.nome_cliente ?? "—"}</td>
-                      <td className="px-4 py-3 text-muted-foreground text-xs">{v.email_cliente ?? "—"}</td>
+                      <td className="px-4 py-3 text-foreground text-xs font-mono break-all">{v.email_cliente ?? "—"}</td>
                       <td className="px-4 py-3 font-bold text-foreground">{formatCurrency(v.valor)}</td>
                       <td className="px-4 py-3">
                         <span className={`text-xs font-semibold px-2 py-1 rounded-full ${STATUS_STYLES[v.status ?? ""] ?? "bg-muted text-muted-foreground"}`}>
                           {statusLabel(v.status)}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground font-mono">{v.transacao_id?.slice(0, 12) ?? "—"}</td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground font-mono break-all">{v.transacao_id ?? "—"}</td>
                     </tr>
                   ))}
                 </tbody>

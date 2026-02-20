@@ -9,6 +9,11 @@ import {
   Shield, LogOut, Sparkles, Loader2, Pencil, Check, X, CreditCard, Rocket, TrendingUp,
 } from "lucide-react";
 
+const ADMIN_EMAILS = [
+  "jmatiassanmiguel1@gmail.com",
+  "noahgodinhocastellobranco@gmail.com",
+];
+
 type Profile = {
   id: string;
   nome: string | null;
@@ -330,26 +335,28 @@ export default function Configuracoes() {
           </div>
         </div>
 
-        {/* ─── VENDAS ─── */}
-        <div className="rounded-2xl border border-border bg-card p-6">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="inline-flex p-2 rounded-xl bg-primary/10">
-              <TrendingUp className="h-5 w-5 text-primary" />
+        {/* ─── VENDAS (apenas admins) ─── */}
+        {ADMIN_EMAILS.includes(profile?.email ?? "") && (
+          <div className="rounded-2xl border border-border bg-card p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="inline-flex p-2 rounded-xl bg-primary/10">
+                <TrendingUp className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="font-bold text-foreground">Vendas em Tempo Real</h2>
+                <p className="text-xs text-muted-foreground">Acompanhe os pagamentos da Cakto</p>
+              </div>
             </div>
-            <div>
-              <h2 className="font-bold text-foreground">Vendas em Tempo Real</h2>
-              <p className="text-xs text-muted-foreground">Acompanhe os pagamentos da Cakto</p>
-            </div>
+            <Button
+              variant="outline"
+              className="w-full h-11 rounded-xl gap-2"
+              onClick={() => navigate("/vendas")}
+            >
+              <TrendingUp className="h-4 w-4" />
+              Ver Painel de Vendas
+            </Button>
           </div>
-          <Button
-            variant="outline"
-            className="w-full h-11 rounded-xl gap-2"
-            onClick={() => navigate("/vendas")}
-          >
-            <TrendingUp className="h-4 w-4" />
-            Ver Painel de Vendas
-          </Button>
-        </div>
+        )}
 
         {/* ─── ALTERAR SENHA ─── */}
         <div className="rounded-2xl border border-border bg-card p-6">
