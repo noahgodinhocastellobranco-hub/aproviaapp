@@ -14,9 +14,40 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_notifications: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          created_by: string | null
+          id: string
+          mensagem: string
+          tipo: string
+          titulo: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          mensagem: string
+          tipo?: string
+          titulo: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          mensagem?: string
+          tipo?: string
+          titulo?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
+          deleted_at: string | null
           email: string | null
           id: string
           is_premium: boolean
@@ -24,6 +55,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          deleted_at?: string | null
           email?: string | null
           id: string
           is_premium?: boolean
@@ -31,6 +63,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          deleted_at?: string | null
           email?: string | null
           id?: string
           is_premium?: boolean
