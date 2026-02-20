@@ -1,4 +1,4 @@
-import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { PWAInstallPrompt } from "./PWAInstallPrompt";
 import { PWAUpdatePrompt } from "./PWAUpdatePrompt";
@@ -32,7 +32,15 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         <main className="flex-1 overflow-auto relative">
           {isMobile && (
             <div className="fixed top-4 left-4 z-50">
-              <SidebarTrigger className="bg-primary text-primary-foreground shadow-md h-10 w-10 rounded-xl" />
+              <button
+                onClick={() => setOpen(true)}
+                className="bg-card border border-border shadow-md h-10 w-10 rounded-xl flex flex-col items-center justify-center gap-[5px] p-2.5"
+                aria-label="Abrir menu"
+              >
+                <span className="block w-full h-[3px] rounded-full bg-primary" />
+                <span className="block w-full h-[3px] rounded-full bg-primary" />
+                <span className="block w-full h-[3px] rounded-full bg-primary" />
+              </button>
             </div>
           )}
           {children}
