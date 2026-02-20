@@ -252,8 +252,24 @@ export default function Auth() {
         .update({ used_at: new Date().toISOString() })
         .eq("id", record.id);
 
+      // Enviar email de boas-vindas em background (não bloqueia o fluxo)
+      const sessionData = await supabase.auth.getSession();
+      const token = sessionData.data.session?.access_token;
+      if (token) {
+        fetch(
+          `https://yecfogakgyszdkipzelm.supabase.co/functions/v1/enviar-boas-vindas`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        ).catch(() => {/* silencioso — não bloqueia */});
+      }
+
       // Sucesso! Redirecionar
-      toast.success("Email verificado com sucesso! Bem-vindo(a)!");
+      toast.success("Email verificado com sucesso! Bem-vindo(a)! 🎉");
       const { data: profile } = await supabase
         .from("profiles")
         .select("is_premium")
