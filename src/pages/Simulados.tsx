@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, FileText } from "lucide-react";
+import { usePremiumGuard } from "@/hooks/usePremiumGuard";
 
 const simulados = [
   {
@@ -41,6 +42,8 @@ const simulados = [
 ];
 
 export default function Simulados() {
+  const { ready } = usePremiumGuard();
+  if (!ready) return null;
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
       <div className="mb-8">
