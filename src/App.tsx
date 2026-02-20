@@ -26,6 +26,7 @@ import Precos from "./pages/Precos";
 import Configuracoes from "./pages/Configuracoes";
 import Suporte from "./pages/Suporte";
 import Vendas from "./pages/Vendas";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/suporte" element={<Suporte />} />
           <Route path="/vendas" element={<Vendas />} />
+          <Route path="/admin" element={<Admin />} />
 
           {/* App pages — with sidebar Layout */}
           <Route
