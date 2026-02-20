@@ -8,7 +8,7 @@ import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
-  const { setOpen } = useSidebar();
+  const { open, setOpen } = useSidebar();
   const isMobile = useIsMobile();
 
   useSwipeGesture({
