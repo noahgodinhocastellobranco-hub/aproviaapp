@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { usePremiumGuard } from "@/hooks/usePremiumGuard";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -118,6 +119,7 @@ const areasInfo: Record<AreaProva, { nome: string; cor: string; icon: string }> 
 };
 
 export default function ProvaENEM() {
+  const { ready } = usePremiumGuard();
   const navigate = useNavigate();
   const [etapa, setEtapa] = useState<EtapaProva>("selecao");
   const [areasSelecionadas, setAreasSelecionadas] = useState<AreaProva[]>([]);
@@ -162,6 +164,8 @@ export default function ProvaENEM() {
     const s = segundos % 60;
     return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
+
+  if (!ready) return null;
 
   const toggleArea = (area: AreaProva) => {
     setAreasSelecionadas((prev) =>

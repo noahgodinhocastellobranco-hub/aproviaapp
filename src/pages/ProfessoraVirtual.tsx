@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { usePremiumGuard } from "@/hooks/usePremiumGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
@@ -52,6 +53,7 @@ const getConversationTitle = (messages: Message[]): string => {
 };
 
 export default function ProfessoraVirtual() {
+  const { ready } = usePremiumGuard();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -292,6 +294,8 @@ export default function ProfessoraVirtual() {
       setMessages([]);
     }
   }, [conversations, currentConversationId, saveConversations]);
+
+  if (!ready) return null;
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
