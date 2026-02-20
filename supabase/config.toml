@@ -61,3 +61,6 @@ verify_jwt = false
 
 [functions.gerar-rotina]
 verify_jwt = false
+
+[functions.enviar-codigo-verificacao]
+verify_jwt = false
