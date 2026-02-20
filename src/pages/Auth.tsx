@@ -278,7 +278,7 @@ export default function Auth() {
 
       setTimeout(() => {
         if (profile?.is_premium) navigate("/dashboard");
-        else navigate("/precos");
+        else navigate("/precos?checkout=1"); // auto-abre o checkout
       }, 1000);
     } catch {
       setOtpError("Erro ao verificar código. Tente novamente.");

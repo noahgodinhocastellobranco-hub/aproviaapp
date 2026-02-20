@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, ArrowLeft, Sparkles, Shield, X } from "lucide-react";
@@ -15,6 +15,7 @@ const CAKTO_URL = "https://pay.cakto.com.br/3c7yw4k_710255";
 
 export default function Precos() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -25,6 +26,10 @@ export default function Precos() {
       setIsLoggedIn(true);
       const { data } = await supabase.from("profiles").select("is_premium").eq("id", userId).single();
       setIsPremium(!!data?.is_premium);
+      // Auto-abrir checkout se vier do fluxo de cadastro
+      if (searchParams.get("checkout") === "1" && !data?.is_premium) {
+        setCheckoutOpen(true);
+      }
     };
 
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -34,7 +39,7 @@ export default function Precos() {
       checkUser(session?.user?.id ?? null);
     });
     return () => subscription.unsubscribe();
-  }, []);
+  }, [searchParams]);
 
   const handleComprar = () => {
     if (isPremium) {
