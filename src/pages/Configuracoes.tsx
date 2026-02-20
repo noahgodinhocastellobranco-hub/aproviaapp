@@ -66,8 +66,7 @@ function useVerification(type: "password" | "email") {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Erro ao enviar código");
 
-      toast.success("Código enviado para o seu email!");
-      setStep("code");
+      toast.success("Código enviado! Verifique seu email.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao enviar código");
     } finally {
@@ -208,6 +207,7 @@ function AlterarSenhaBlock() {
   const v = useVerification("password");
 
   const handleSendCode = async () => {
+    v.setStep("code"); // mostra os campos imediatamente
     await v.sendCode();
   };
 
@@ -309,6 +309,7 @@ function AlterarEmailBlock({ currentEmail }: { currentEmail: string | null }) {
 
   const handleSendCode = async () => {
     if (!v.inputValue.trim()) { toast.error("Digite o novo email"); return; }
+    v.setStep("code"); // mostra os campos imediatamente
     await v.sendCode(v.inputValue.trim());
   };
 
