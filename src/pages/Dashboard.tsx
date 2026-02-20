@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Megaphone, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "next-themes";
@@ -175,6 +176,8 @@ export default function Dashboard() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [acessos, setAcessos] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [avisos, setAvisos] = useState<{id:string;titulo:string;mensagem:string;tipo:string}[]>([]);
+  const [avisosVisiveis, setAvisosVisiveis] = useState<Set<string>>(new Set());
   const dropdownRef = useRef<HTMLDivElement>(null);
   const enem2026 = new Date("2026-11-01T08:00:00");
   const countdown = useCountdown(enem2026);
@@ -242,6 +245,14 @@ export default function Dashboard() {
 
       // Carrega atividade (sem registrar acesso automático)
       await loadActivity(uid);
+
+      // Carrega avisos do admin
+      const { data: avisosData } = await (supabase as any)
+        .from("admin_notifications")
+        .select("id, titulo, mensagem, tipo")
+        .eq("ativo", true)
+        .order("created_at", { ascending: false });
+      if (avisosData) setAvisos(avisosData);
     };
 
     // onAuthStateChange garante que o token seja renovado automaticamente
@@ -300,6 +311,23 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+
+      {/* ─── AVISOS DO ADMIN ─── */}
+      {avisos.filter(a => !avisosVisiveis.has(a.id)).map((aviso) => (
+        <div key={aviso.id} className={`border-b px-4 py-3 flex items-start gap-3 text-sm ${
+          aviso.tipo === "warning" ? "bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-900 text-yellow-800 dark:text-yellow-300" :
+          aviso.tipo === "success" ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900 text-emerald-800 dark:text-emerald-300" :
+          "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900 text-blue-800 dark:text-blue-300"
+        }`}>
+          <Megaphone className="h-4 w-4 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <span className="font-bold">{aviso.titulo}:</span> {aviso.mensagem}
+          </div>
+          <button onClick={() => setAvisosVisiveis(prev => new Set([...prev, aviso.id]))} className="shrink-0 opacity-60 hover:opacity-100">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      ))}
 
       {/* ─── HEADER ─── */}
       <header className="sticky top-0 z-50 bg-background border-b border-border">
