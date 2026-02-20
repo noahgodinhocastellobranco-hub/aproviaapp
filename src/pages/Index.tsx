@@ -192,15 +192,23 @@ const tools = [
 export default function Index() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isPremium, setIsPremium] = useState(false);
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
+    const checkUser = async (userId: string | null, email: string | null) => {
+      setUserEmail(email);
+      if (!userId) { setIsPremium(false); return; }
+      const { data } = await supabase.from("profiles").select("is_premium").eq("id", userId).single();
+      setIsPremium(!!data?.is_premium);
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUserEmail(session?.user?.email ?? null);
+      checkUser(session?.user?.id ?? null, session?.user?.email ?? null);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUserEmail(session?.user?.email ?? null);
+      checkUser(session?.user?.id ?? null, session?.user?.email ?? null);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -242,11 +250,18 @@ export default function Index() {
                 <span>Suporte</span>
               </Button>
 
-              {/* Assinar PRO */}
-              <Button size="sm" className="gap-1.5 rounded-md px-4 font-bold" onClick={() => navigate("/precos")}>
-                <Sparkles className="h-3.5 w-3.5" />
-                Assinar PRO
-              </Button>
+              {/* Assinar PRO / Acessar PRO */}
+              {isPremium ? (
+                <Button size="sm" className="gap-1.5 rounded-md px-4 font-bold" onClick={() => navigate("/dashboard")}>
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Meu Plano PRO ✓
+                </Button>
+              ) : (
+                <Button size="sm" className="gap-1.5 rounded-md px-4 font-bold" onClick={() => navigate("/precos")}>
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Assinar PRO
+                </Button>
+              )}
 
               {/* Minha Conta / Logout */}
               <Button variant="outline" size="sm" className="gap-1.5 rounded-md px-3" onClick={handleLogout}>
@@ -330,20 +345,22 @@ export default function Index() {
           <Button
             size="lg"
             className="text-base px-8 py-6 rounded-xl font-bold uppercase tracking-wide gap-2 transition-all duration-200 hover:scale-105 hover:shadow-lg"
-            onClick={() => navigate("/precos")}
+            onClick={() => navigate(isPremium ? "/dashboard" : "/precos")}
           >
             <Sparkles className="h-5 w-5" />
-            COMEÇAR AGORA
+            {isPremium ? "ACESSAR MEU PLANO" : "COMEÇAR AGORA"}
             <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
           </Button>
-          <Button
-            asChild
-            size="lg"
-            variant="outline"
-            className="text-base px-8 py-6 rounded-xl font-medium transition-all duration-200 hover:scale-105 hover:shadow-md hover:border-primary hover:text-primary"
-          >
-            <Link to="/auth">Já tenho conta</Link>
-          </Button>
+          {!isPremium && (
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="text-base px-8 py-6 rounded-xl font-medium transition-all duration-200 hover:scale-105 hover:shadow-md hover:border-primary hover:text-primary"
+            >
+              <Link to="/auth">Já tenho conta</Link>
+            </Button>
+          )}
         </div>
 
         {/* Trust row */}
