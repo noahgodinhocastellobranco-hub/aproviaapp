@@ -46,9 +46,9 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { type, new_email } = body; // type: 'password' | 'email'
+    const { type, new_email } = body; // type: 'password' | 'email' | 'signup_verify'
 
-    if (!type || !["password", "email"].includes(type)) {
+    if (!type || !["password", "email", "signup_verify"].includes(type)) {
       return new Response(JSON.stringify({ error: "Tipo inválido" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -101,8 +101,14 @@ Deno.serve(async (req) => {
 
     // Definir destinatário e conteúdo do email
     const destinatario = type === "email" ? new_email : user.email!;
-    const assunto = type === "password" ? "Código para alterar sua senha" : "Código para alterar seu email";
-    const acao = type === "password" ? "alterar sua senha" : "alterar seu email";
+    const assunto =
+      type === "password" ? "Código para alterar sua senha" :
+      type === "signup_verify" ? "Seu código de verificação - Aprovia" :
+      "Código para alterar seu email";
+    const acao =
+      type === "password" ? "alterar sua senha" :
+      type === "signup_verify" ? "verificar seu email e ativar sua conta" :
+      "alterar seu email";
 
     // Tentar enviar email via Resend (pode falhar em contas sem domínio verificado)
     let emailEnviado = false;

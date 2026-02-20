@@ -1,11 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Loader2, Brain, User, Lock, Eye, EyeOff, Sparkles, ArrowLeft, Mail, MailCheck } from "lucide-react";
+import {
+  Loader2, Brain, User, Lock, Eye, EyeOff, Sparkles,
+  ArrowLeft, Mail, ShieldCheck, RefreshCw, CheckCircle2
+} from "lucide-react";
 
 type Mode = "login" | "signup" | "forgot" | "verify";
 
@@ -20,6 +23,25 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [nome, setNome] = useState("");
 
+  // OTP state
+  const [otp, setOtp] = useState(["", "", "", ""]);
+  const [otpError, setOtpError] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [codigoFallback, setCodigoFallback] = useState<string | null>(null);
+  const [signedUpUserId, setSignedUpUserId] = useState<string | null>(null);
+
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval>;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => setResendCooldown(prev => prev - 1), 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
   useEffect(() => {
     const redirectUser = async (userId: string) => {
       const { data } = await supabase.from("profiles").select("is_premium").eq("id", userId).single();
@@ -31,13 +53,13 @@ export default function Auth() {
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) redirectUser(session.user.id);
+      if (session?.user && mode !== "verify") redirectUser(session.user.id);
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) redirectUser(session.user.id);
+      if (session?.user && mode !== "verify") redirectUser(session.user.id);
     });
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, mode]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,15 +82,35 @@ export default function Auth() {
     }
   };
 
+  const sendVerificationCode = async (userId: string, userEmail: string) => {
+    const session = await supabase.auth.getSession();
+    const token = session.data.session?.access_token;
+    if (!token) return null;
+
+    const res = await fetch(
+      `https://yecfogakgyszdkipzelm.supabase.co/functions/v1/enviar-codigo-verificacao`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ type: "signup_verify", userEmail }),
+      }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.codigoFallback ?? null;
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth`,
           data: { nome },
         },
       });
@@ -78,13 +120,167 @@ export default function Auth() {
         } else {
           toast.error(error.message);
         }
-      } else {
-        setMode("verify");
+        return;
       }
+
+      setSignedUpUserId(data.user?.id ?? null);
+      // Enviar código via edge function
+      await sendCodeAndShowVerify();
     } catch {
       toast.error("Erro ao criar conta");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const sendCodeAndShowVerify = async () => {
+    // Usar edge function de verificação de email customizada
+    // Vamos inserir o código diretamente usando a sessão do usuário recém-criado
+    try {
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+
+      if (!token) {
+        // Usuário criado mas ainda sem sessão — mostrar tela mesmo assim
+        setMode("verify");
+        setOtp(["", "", "", ""]);
+        setResendCooldown(60);
+        return;
+      }
+
+      const res = await fetch(
+        `https://yecfogakgyszdkipzelm.supabase.co/functions/v1/enviar-codigo-verificacao`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ type: "signup_verify" }),
+        }
+      );
+
+      const data = res.ok ? await res.json() : null;
+      setCodigoFallback(data?.codigoFallback ?? null);
+    } catch {
+      // continua para mostrar a tela
+    }
+
+    setMode("verify");
+    setOtp(["", "", "", ""]);
+    setResendCooldown(60);
+    setTimeout(() => otpRefs.current[0]?.focus(), 300);
+  };
+
+  // Manipular digitação nos campos OTP
+  const handleOtpChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+    const newOtp = [...otp];
+    newOtp[index] = value.slice(-1);
+    setOtp(newOtp);
+    setOtpError("");
+
+    if (value && index < 3) {
+      otpRefs.current[index + 1]?.focus();
+    }
+    // Auto-submit quando todos os 4 dígitos estiverem preenchidos
+    if (newOtp.every(d => d !== "") && newOtp.join("").length === 4) {
+      handleVerifyOtp(newOtp.join(""));
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 4);
+    if (pasted.length === 4) {
+      const newOtp = pasted.split("");
+      setOtp(newOtp);
+      otpRefs.current[3]?.focus();
+      handleVerifyOtp(pasted);
+    }
+  };
+
+  const handleVerifyOtp = async (code: string) => {
+    if (code.length !== 4) return;
+    setVerifying(true);
+    setOtpError("");
+
+    try {
+      // Buscar código na tabela verification_codes
+      const session = await supabase.auth.getSession();
+      const userId = session.data.session?.user?.id;
+
+      if (!userId) {
+        setOtpError("Sessão expirada. Por favor, recrie sua conta.");
+        setVerifying(false);
+        return;
+      }
+
+      const { data: codes, error } = await supabase
+        .from("verification_codes")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("type", "signup_verify")
+        .is("used_at", null)
+        .gt("expires_at", new Date().toISOString())
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (error || !codes || codes.length === 0) {
+        setOtpError("Código inválido ou expirado. Tente reenviar.");
+        setVerifying(false);
+        return;
+      }
+
+      const record = codes[0];
+      if (record.code !== code) {
+        setOtpError("Código incorreto. Verifique e tente novamente.");
+        setVerifying(false);
+        // Shake animation
+        return;
+      }
+
+      // Marcar como usado
+      await supabase
+        .from("verification_codes")
+        .update({ used_at: new Date().toISOString() })
+        .eq("id", record.id);
+
+      // Sucesso! Redirecionar
+      toast.success("Email verificado com sucesso! Bem-vindo(a)!");
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_premium")
+        .eq("id", userId)
+        .single();
+
+      setTimeout(() => {
+        if (profile?.is_premium) navigate("/dashboard");
+        else navigate("/precos");
+      }, 1000);
+    } catch {
+      setOtpError("Erro ao verificar código. Tente novamente.");
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (resendCooldown > 0) return;
+    setResending(true);
+    try {
+      await sendCodeAndShowVerify();
+      toast.success("Novo código enviado para seu email!");
+    } catch {
+      toast.error("Erro ao reenviar código");
+    } finally {
+      setResending(false);
     }
   };
 
@@ -141,16 +337,18 @@ export default function Auth() {
           <Brain className="h-10 w-10 text-primary" />
           <span className="text-3xl font-extrabold text-primary tracking-tight">AprovI.A</span>
         </div>
-        <p className="text-muted-foreground text-sm">
-          {mode === "login" && "Bem-vindo de volta! Entre para continuar."}
-          {mode === "signup" && "Crie sua conta e comece a estudar agora!"}
-          {mode === "forgot" && "Vamos recuperar o acesso à sua conta."}
-        </p>
+        {mode !== "verify" && (
+          <p className="text-muted-foreground text-sm">
+            {mode === "login" && "Bem-vindo de volta! Entre para continuar."}
+            {mode === "signup" && "Crie sua conta e comece a estudar agora!"}
+            {mode === "forgot" && "Vamos recuperar o acesso à sua conta."}
+          </p>
+        )}
       </div>
 
       {/* Card */}
       <div className="flex-1 flex items-start justify-center px-4 pb-10">
-        <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-lg p-8">
+        <div className={`w-full bg-card border border-border rounded-2xl shadow-lg p-8 ${mode === "verify" ? "max-w-lg" : "max-w-md"}`}>
 
           {/* ─── LOGIN ─── */}
           {mode === "login" && (
@@ -161,15 +359,14 @@ export default function Auth() {
               </div>
 
               <form onSubmit={handleLogin} className="space-y-4">
-                {/* Email */}
                 <div className="space-y-1.5">
                   <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
                     <User className="h-4 w-4 text-muted-foreground" />
-                    Email ou Nome Completo
+                    Email
                   </label>
                   <Input
                     type="email"
-                    placeholder="seu@email.com ou seu nome completo"
+                    placeholder="seu@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -177,7 +374,6 @@ export default function Auth() {
                   />
                 </div>
 
-                {/* Senha */}
                 <div className="space-y-1.5">
                   <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
                     <Lock className="h-4 w-4 text-muted-foreground" />
@@ -202,7 +398,6 @@ export default function Auth() {
                   </div>
                 </div>
 
-                {/* Esqueci */}
                 <div className="flex justify-end">
                   <button
                     type="button"
@@ -213,7 +408,6 @@ export default function Auth() {
                   </button>
                 </div>
 
-                {/* Submit */}
                 <Button type="submit" className="w-full h-12 rounded-xl text-base font-bold gap-2" disabled={isLoading}>
                   {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (
                     <>Entrar na conta <Sparkles className="h-4 w-4" /></>
@@ -221,14 +415,12 @@ export default function Auth() {
                 </Button>
               </form>
 
-              {/* Divider */}
               <div className="flex items-center gap-3 my-5">
                 <div className="flex-1 h-px bg-border" />
                 <span className="text-xs text-muted-foreground font-semibold tracking-widest">OU CONTINUE COM</span>
                 <div className="flex-1 h-px bg-border" />
               </div>
 
-              {/* Google */}
               <Button
                 variant="outline"
                 className="w-full h-12 rounded-xl text-base font-medium gap-3"
@@ -248,7 +440,6 @@ export default function Auth() {
                 )}
               </Button>
 
-              {/* Switch to signup */}
               <p className="text-center text-sm text-muted-foreground mt-6">
                 Não tem uma conta?{" "}
                 <button onClick={() => setMode("signup")} className="text-primary font-semibold hover:underline">
@@ -329,7 +520,6 @@ export default function Auth() {
                 </Button>
               </form>
 
-              {/* Divider */}
               <div className="flex items-center gap-3 my-5">
                 <div className="flex-1 h-px bg-border" />
                 <span className="text-xs text-muted-foreground font-semibold tracking-widest">OU CONTINUE COM</span>
@@ -402,40 +592,139 @@ export default function Auth() {
             </>
           )}
 
-          {/* ─── VERIFY EMAIL ─── */}
+          {/* ─── VERIFY OTP ─── */}
           {mode === "verify" && (
-            <div className="flex flex-col items-center text-center py-4">
-              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-                <MailCheck className="h-10 w-10 text-primary" />
+            <div className="flex flex-col items-center">
+              {/* Header com ícone animado */}
+              <div className="relative mb-6">
+                <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
+                    <ShieldCheck className="h-8 w-8 text-primary" />
+                  </div>
+                </div>
+                {/* Anel pulsante */}
+                <div className="absolute inset-0 rounded-full border-2 border-primary/30 animate-ping" />
               </div>
-              <h1 className="text-2xl font-bold text-foreground mb-3">Verifique seu email</h1>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-2">
-                Enviamos um link de confirmação para:
+
+              <h1 className="text-2xl font-extrabold text-foreground text-center mb-2">
+                Verifique seu email
+              </h1>
+              <p className="text-muted-foreground text-sm text-center leading-relaxed mb-1">
+                Enviamos um código de 4 dígitos para:
               </p>
-              <p className="font-semibold text-foreground text-base mb-6 bg-muted px-4 py-2 rounded-lg">
-                {email}
-              </p>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-8">
-                Abra seu email e clique no link para ativar sua conta. Após confirmar, você será redirecionado automaticamente.
-              </p>
-              <div className="w-full space-y-3">
-                <Button
-                  variant="outline"
-                  className="w-full h-11 rounded-xl"
-                  onClick={async () => {
-                    await supabase.auth.resend({ type: "signup", email });
-                    toast.success("Email reenviado!");
-                  }}
-                >
-                  Reenviar email
-                </Button>
-                <button
-                  onClick={() => setMode("login")}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Já confirmei meu email → Entrar
-                </button>
+              <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 px-4 py-2 rounded-full mb-6">
+                <Mail className="h-4 w-4 text-primary" />
+                <span className="font-semibold text-primary text-sm">{email}</span>
               </div>
+
+              {/* Passos */}
+              <div className="w-full bg-muted/50 rounded-xl p-4 mb-6 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Como funciona</p>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</div>
+                  <p className="text-sm text-foreground">Abra o email que enviamos para <strong>{email}</strong></p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
+                  <p className="text-sm text-foreground">Copie o código de <strong>4 dígitos</strong> do email</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</div>
+                  <p className="text-sm text-foreground">Digite o código abaixo para ativar sua conta</p>
+                </div>
+              </div>
+
+              {/* Campos OTP */}
+              <div className="w-full mb-2">
+                <p className="text-sm font-semibold text-foreground text-center mb-4">Digite o código recebido</p>
+                <div className="flex justify-center gap-3" onPaste={handleOtpPaste}>
+                  {otp.map((digit, i) => (
+                    <input
+                      key={i}
+                      ref={el => { otpRefs.current[i] = el; }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={e => handleOtpChange(i, e.target.value)}
+                      onKeyDown={e => handleOtpKeyDown(i, e)}
+                      disabled={verifying}
+                      className={[
+                        "w-16 h-16 text-center text-2xl font-extrabold rounded-xl border-2 outline-none transition-all duration-200",
+                        "bg-background text-foreground",
+                        digit && !otpError ? "border-primary bg-primary/5 scale-105" : "",
+                        otpError ? "border-destructive bg-destructive/5" : "",
+                        !digit && !otpError ? "border-border" : "",
+                        "focus:border-primary focus:ring-2 focus:ring-primary/20 focus:scale-105",
+                        "disabled:opacity-50 disabled:cursor-not-allowed",
+                      ].join(" ")}
+                    />
+                  ))}
+                </div>
+
+                {/* Estado de verificação */}
+                {verifying && (
+                  <div className="flex items-center justify-center gap-2 mt-4 text-primary">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm font-medium">Verificando código...</span>
+                  </div>
+                )}
+
+                {/* Erro */}
+                {otpError && (
+                  <div className="mt-3 bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-center">
+                    <p className="text-sm text-destructive font-medium">{otpError}</p>
+                  </div>
+                )}
+
+                {/* Sucesso */}
+                {!otpError && otp.every(d => d !== "") && !verifying && (
+                  <div className="flex items-center justify-center gap-2 mt-4 text-green-600 dark:text-green-400">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span className="text-sm font-medium">Código completo!</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Código fallback (quando email não foi enviado) */}
+              {codigoFallback && (
+                <div className="w-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-4">
+                  <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-1">⚠️ Email não pôde ser enviado — código para teste:</p>
+                  <p className="text-2xl font-extrabold text-amber-800 dark:text-amber-300 tracking-widest text-center">{codigoFallback}</p>
+                </div>
+              )}
+
+              {/* Expiração */}
+              <p className="text-xs text-muted-foreground text-center mb-5">
+                O código expira em <strong>10 minutos</strong> · Não compartilhe com ninguém
+              </p>
+
+              {/* Reenviar */}
+              <button
+                onClick={handleResendCode}
+                disabled={resendCooldown > 0 || resending}
+                className="flex items-center gap-2 text-sm font-medium text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed disabled:no-underline transition-opacity"
+              >
+                {resending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4" />
+                )}
+                {resendCooldown > 0
+                  ? `Reenviar código em ${resendCooldown}s`
+                  : "Reenviar código"}
+              </button>
+
+              <div className="flex items-center gap-3 my-5 w-full">
+                <div className="flex-1 h-px bg-border" />
+              </div>
+
+              <button
+                onClick={() => setMode("login")}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                ← Voltar ao login
+              </button>
             </div>
           )}
         </div>
