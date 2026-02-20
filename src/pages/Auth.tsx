@@ -79,7 +79,8 @@ export default function Auth() {
           toast.error(error.message);
         }
       } else {
-        toast.success("Conta criada! Verifique seu email para confirmar o cadastro.");
+        toast.success("Conta criada com sucesso! Bem-vindo(a) ao AprovI.A!");
+        navigate("/precos");
       }
     } catch {
       toast.error("Erro ao criar conta");
