@@ -104,43 +104,50 @@ Deno.serve(async (req) => {
     const assunto = type === "password" ? "Código para alterar sua senha" : "Código para alterar seu email";
     const acao = type === "password" ? "alterar sua senha" : "alterar seu email";
 
-    // Enviar email via Resend
-    const emailRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "Aprovia <onboarding@resend.dev>",
-        to: [destinatario],
-        subject: assunto,
-        html: `
-          <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
-            <h2 style="color: #7c3aed; margin-bottom: 8px;">Aprovia</h2>
-            <p style="color: #374151; font-size: 16px;">
-              Use o código abaixo para ${acao}:
-            </p>
-            <div style="background: #f3f4f6; border-radius: 12px; padding: 24px; text-align: center; margin: 24px 0;">
-              <span style="font-size: 48px; font-weight: bold; letter-spacing: 12px; color: #7c3aed;">${code}</span>
+    // Tentar enviar email via Resend (pode falhar em contas sem domínio verificado)
+    let emailEnviado = false;
+    try {
+      const emailRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "Aprovia <onboarding@resend.dev>",
+          to: [destinatario],
+          subject: assunto,
+          html: `
+            <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
+              <h2 style="color: #7c3aed; margin-bottom: 8px;">Aprovia</h2>
+              <p style="color: #374151; font-size: 16px;">
+                Use o código abaixo para ${acao}:
+              </p>
+              <div style="background: #f3f4f6; border-radius: 12px; padding: 24px; text-align: center; margin: 24px 0;">
+                <span style="font-size: 48px; font-weight: bold; letter-spacing: 12px; color: #7c3aed;">${code}</span>
+              </div>
+              <p style="color: #6b7280; font-size: 14px;">
+                Este código expira em <strong>10 minutos</strong>. Não compartilhe com ninguém.
+              </p>
+              <p style="color: #9ca3af; font-size: 12px; margin-top: 24px;">
+                Se você não solicitou essa alteração, ignore este email.
+              </p>
             </div>
-            <p style="color: #6b7280; font-size: 14px;">
-              Este código expira em <strong>10 minutos</strong>. Não compartilhe com ninguém.
-            </p>
-            <p style="color: #9ca3af; font-size: 12px; margin-top: 24px;">
-              Se você não solicitou essa alteração, ignore este email.
-            </p>
-          </div>
-        `,
-      }),
-    });
+          `,
+        }),
+      });
 
-    if (!emailRes.ok) {
-      const errBody = await emailRes.text();
-      throw new Error(`Erro ao enviar email: ${errBody}`);
+      if (emailRes.ok) {
+        emailEnviado = true;
+      } else {
+        const errBody = await emailRes.text();
+        console.error("Resend error (non-fatal):", errBody);
+      }
+    } catch (emailErr) {
+      console.error("Falha ao enviar email (non-fatal):", emailErr);
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ success: true, emailEnviado }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
