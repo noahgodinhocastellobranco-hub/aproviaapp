@@ -111,6 +111,7 @@ export function AppSidebar() {
     <Sidebar
       collapsible={isMobile ? "offcanvas" : "none"}
       className="border-r border-border bg-card"
+      side="left"
     >
       <SidebarHeader className="p-4 pb-3 bg-card">
         {isMobile && (

@@ -8,7 +8,7 @@ import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
-  const { open, setOpen } = useSidebar();
+  const { open, setOpen, toggleSidebar } = useSidebar();
   const isMobile = useIsMobile();
 
   useSwipeGesture({
@@ -33,7 +33,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           {isMobile && (
             <div className="fixed top-4 left-4 z-50">
               <button
-                onClick={() => setOpen(true)}
+                onClick={toggleSidebar}
                 className="bg-card border border-border shadow-md h-10 w-10 rounded-xl flex flex-col items-center justify-center gap-[5px] p-2.5"
                 aria-label="Abrir menu"
               >
