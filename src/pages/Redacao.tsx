@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { trackActivity } from "@/hooks/useTrackActivity";
+import { usePremiumGuard } from "@/hooks/usePremiumGuard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,12 +42,15 @@ interface Resultado {
 }
 
 export default function Redacao() {
+  const { ready } = usePremiumGuard();
   const [tema, setTema] = useState("");
   const [redacao, setRedacao] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [resultado, setResultado] = useState<Resultado | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  if (!ready) return null;
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

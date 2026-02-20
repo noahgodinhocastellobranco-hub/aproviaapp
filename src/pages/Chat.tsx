@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { trackActivity } from "@/hooks/useTrackActivity";
+import { usePremiumGuard } from "@/hooks/usePremiumGuard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ type Message = {
 };
 
 export default function Chat() {
+  const { ready } = usePremiumGuard();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -32,6 +34,8 @@ export default function Chat() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  if (!ready) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
