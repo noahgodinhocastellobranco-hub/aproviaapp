@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { usePremiumGuard } from '@/hooks/usePremiumGuard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera, Upload, Loader2, CheckCircle } from 'lucide-react';
@@ -7,11 +8,14 @@ import { supabase } from '@/integrations/supabase/client';
 import FormattedText from '@/components/FormattedText';
 
 const ResolverQuestao = () => {
+  const { ready } = usePremiumGuard();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [solution, setSolution] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  if (!ready) return null;
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
