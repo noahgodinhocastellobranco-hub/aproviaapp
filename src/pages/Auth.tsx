@@ -5,9 +5,9 @@ import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Loader2, Brain, User, Lock, Eye, EyeOff, Sparkles, ArrowLeft, Mail } from "lucide-react";
+import { Loader2, Brain, User, Lock, Eye, EyeOff, Sparkles, ArrowLeft, Mail, MailCheck } from "lucide-react";
 
-type Mode = "login" | "signup" | "forgot";
+type Mode = "login" | "signup" | "forgot" | "verify";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -68,7 +68,7 @@ export default function Auth() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/chat`,
+          emailRedirectTo: `${window.location.origin}/auth`,
           data: { nome },
         },
       });
@@ -79,8 +79,7 @@ export default function Auth() {
           toast.error(error.message);
         }
       } else {
-        toast.success("Conta criada com sucesso! Bem-vindo(a) ao AprovI.A!");
-        navigate("/precos");
+        setMode("verify");
       }
     } catch {
       toast.error("Erro ao criar conta");
@@ -401,6 +400,43 @@ export default function Auth() {
                 </button>
               </p>
             </>
+          )}
+
+          {/* ─── VERIFY EMAIL ─── */}
+          {mode === "verify" && (
+            <div className="flex flex-col items-center text-center py-4">
+              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                <MailCheck className="h-10 w-10 text-primary" />
+              </div>
+              <h1 className="text-2xl font-bold text-foreground mb-3">Verifique seu email</h1>
+              <p className="text-muted-foreground text-sm leading-relaxed mb-2">
+                Enviamos um link de confirmação para:
+              </p>
+              <p className="font-semibold text-foreground text-base mb-6 bg-muted px-4 py-2 rounded-lg">
+                {email}
+              </p>
+              <p className="text-muted-foreground text-sm leading-relaxed mb-8">
+                Abra seu email e clique no link para ativar sua conta. Após confirmar, você será redirecionado automaticamente.
+              </p>
+              <div className="w-full space-y-3">
+                <Button
+                  variant="outline"
+                  className="w-full h-11 rounded-xl"
+                  onClick={async () => {
+                    await supabase.auth.resend({ type: "signup", email });
+                    toast.success("Email reenviado!");
+                  }}
+                >
+                  Reenviar email
+                </Button>
+                <button
+                  onClick={() => setMode("login")}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Já confirmei meu email → Entrar
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>
