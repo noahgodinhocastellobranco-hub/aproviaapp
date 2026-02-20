@@ -5,7 +5,7 @@ import { useTheme } from "next-themes";
 import {
   PenTool, Brain, FileText, GraduationCap, Timer, Star,
   Rocket, Settings, MessageCircle, Flame, Moon, Sun,
-  CheckCircle2, Sparkles, LogOut, LayoutDashboard
+  CheckCircle2, Sparkles, LogOut, LayoutDashboard, ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotificationSetup } from "@/components/NotificationSetup";
@@ -174,6 +174,7 @@ export default function Dashboard() {
   const [streak, setStreak] = useState(0);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [acessos, setAcessos] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
+  const [isAdmin, setIsAdmin] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const enem2026 = new Date("2026-11-01T08:00:00");
   const countdown = useCountdown(enem2026);
@@ -229,6 +230,15 @@ export default function Dashboard() {
         const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(`${uid}/${files[0].name}`);
         setAvatarUrl(urlData.publicUrl);
       }
+
+      // Check admin role
+      const { data: roleData } = await supabase
+        .from("user_roles" as any)
+        .select("role")
+        .eq("user_id", uid)
+        .eq("role", "admin")
+        .maybeSingle();
+      setIsAdmin(!!roleData);
 
       // Carrega atividade (sem registrar acesso automático)
       await loadActivity(uid);
@@ -424,6 +434,21 @@ export default function Dashboard() {
             COMECE A ESTUDAR
             <span className="text-primary-foreground/70">›</span>
           </Button>
+
+          {/* Botão Admin - apenas para admins */}
+          {isAdmin && (
+            <div>
+              <Button
+                size="lg"
+                variant="outline"
+                className="px-8 py-5 rounded-xl font-bold gap-2 border-2 border-primary/40 text-primary hover:bg-primary/5"
+                onClick={() => navigate("/admin")}
+              >
+                <ShieldCheck className="h-5 w-5" />
+                Painel de Administração
+              </Button>
+            </div>
+          )}
 
           {/* Trust pills */}
           <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
