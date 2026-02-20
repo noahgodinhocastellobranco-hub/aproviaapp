@@ -32,6 +32,7 @@ function useVerification(type: "password" | "email") {
   const [newPass, setNewPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
   const [loading, setLoading] = useState(false);
+  const [codigoFallback, setCodigoFallback] = useState<string | null>(null);
 
   const reset = () => {
     setStep("idle");
@@ -40,6 +41,7 @@ function useVerification(type: "password" | "email") {
     setNewPass("");
     setConfirmPass("");
     setLoading(false);
+    setCodigoFallback(null);
   };
 
   // Passo 1: solicitar envio do código
@@ -66,7 +68,14 @@ function useVerification(type: "password" | "email") {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Erro ao enviar código");
 
-      toast.success("Código enviado! Verifique seu email.");
+      if (json.emailEnviado) {
+        toast.success("Código enviado! Verifique seu email.");
+        setCodigoFallback(null);
+      } else if (json.codigoFallback) {
+        // Email não chegou — mostra na tela como fallback
+        setCodigoFallback(json.codigoFallback);
+        toast.warning("Email não enviado. Use o código exibido na tela.");
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao enviar código");
     } finally {
@@ -146,6 +155,7 @@ function useVerification(type: "password" | "email") {
     newPass, setNewPass,
     confirmPass, setConfirmPass,
     loading,
+    codigoFallback,
     reset, sendCode, verifyCode, applyChange,
   };
 }
@@ -247,9 +257,27 @@ function AlterarSenhaBlock() {
 
       {v.step === "code" && (
         <div className="space-y-5">
-          <p className="text-sm text-muted-foreground text-center">
-            Digite o código de 4 dígitos enviado ao seu email:
-          </p>
+          {v.codigoFallback ? (
+            <div className="rounded-xl border-2 border-primary/40 bg-primary/5 p-4 text-center space-y-2">
+              <p className="text-xs font-semibold text-primary uppercase tracking-wide">
+                ⚠️ Email não enviado — use o código abaixo
+              </p>
+              <div className="flex justify-center gap-3">
+                {v.codigoFallback.split("").map((d, i) => (
+                  <div key={i} className="w-12 h-12 rounded-lg bg-primary/10 border-2 border-primary/50 flex items-center justify-center text-2xl font-bold text-primary">
+                    {d}
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Para receber por email, verifique um domínio no Resend
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center">
+              Digite o código de 4 dígitos enviado ao seu email:
+            </p>
+          )}
           <CodeInput value={v.code} onChange={v.setCode} />
           <div className="flex gap-2">
             <Button className="flex-1 h-11 rounded-xl" onClick={handleVerifyAndNext} disabled={v.loading || v.code.length < 4}>
@@ -359,9 +387,27 @@ function AlterarEmailBlock({ currentEmail }: { currentEmail: string | null }) {
 
       {v.step === "code" && (
         <div className="mt-4 space-y-5">
-          <p className="text-sm text-muted-foreground text-center">
-            Digite o código enviado para <strong>{v.inputValue}</strong>:
-          </p>
+          {v.codigoFallback ? (
+            <div className="rounded-xl border-2 border-primary/40 bg-primary/5 p-4 text-center space-y-2">
+              <p className="text-xs font-semibold text-primary uppercase tracking-wide">
+                ⚠️ Email não enviado — use o código abaixo
+              </p>
+              <div className="flex justify-center gap-3">
+                {v.codigoFallback.split("").map((d, i) => (
+                  <div key={i} className="w-12 h-12 rounded-lg bg-primary/10 border-2 border-primary/50 flex items-center justify-center text-2xl font-bold text-primary">
+                    {d}
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Para receber por email, verifique um domínio no Resend
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center">
+              Digite o código enviado para <strong>{v.inputValue}</strong>:
+            </p>
+          )}
           <CodeInput value={v.code} onChange={v.setCode} />
           <div className="flex gap-2">
             <Button className="flex-1 h-11 rounded-xl" onClick={handleVerifyAndApply} disabled={v.loading || v.code.length < 4}>

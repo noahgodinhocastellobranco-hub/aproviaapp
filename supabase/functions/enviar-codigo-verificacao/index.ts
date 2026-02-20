@@ -147,7 +147,12 @@ Deno.serve(async (req) => {
       console.error("Falha ao enviar email (non-fatal):", emailErr);
     }
 
-    return new Response(JSON.stringify({ success: true, emailEnviado }), {
+    // Se email não foi enviado, retorna o código na resposta (fallback visual)
+    return new Response(JSON.stringify({
+      success: true,
+      emailEnviado,
+      codigoFallback: emailEnviado ? null : code,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
