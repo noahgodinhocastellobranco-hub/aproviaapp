@@ -208,7 +208,6 @@ function AlterarSenhaBlock() {
   const v = useVerification("password");
 
   const handleSendCode = async () => {
-    v.setStep("input"); // vai direto para envio (sem precisar de campo extra)
     await v.sendCode();
   };
 
