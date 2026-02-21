@@ -10,7 +10,7 @@ import {
   ArrowLeft, Mail, ShieldCheck, RefreshCw, CheckCircle2
 } from "lucide-react";
 
-type Mode = "login" | "signup" | "forgot" | "verify";
+type Mode = "login" | "signup" | "forgot" | "forgot_code" | "forgot_newpass" | "verify";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -31,6 +31,14 @@ export default function Auth() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [codigoFallback, setCodigoFallback] = useState<string | null>(null);
   const [signedUpUserId, setSignedUpUserId] = useState<string | null>(null);
+
+  // Forgot password OTP state
+  const [forgotCode, setForgotCode] = useState(["", "", "", ""]);
+  const [forgotCodeError, setForgotCodeError] = useState("");
+  const [forgotNewPass, setForgotNewPass] = useState("");
+  const [forgotConfirmPass, setForgotConfirmPass] = useState("");
+  const [forgotCodigoFallback, setForgotCodigoFallback] = useState<string | null>(null);
+  const forgotOtpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -53,10 +61,10 @@ export default function Auth() {
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user && mode !== "verify") redirectUser(session.user.id);
+      if (session?.user && mode !== "verify" && mode !== "forgot_code" && mode !== "forgot_newpass") redirectUser(session.user.id);
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user && mode !== "verify") redirectUser(session.user.id);
+      if (session?.user && mode !== "verify" && mode !== "forgot_code" && mode !== "forgot_newpass") redirectUser(session.user.id);
     });
     return () => subscription.unsubscribe();
   }, [navigate, mode]);
@@ -300,21 +308,128 @@ export default function Auth() {
     }
   };
 
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
   const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (error) {
-        toast.error(error.message);
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/resetar-senha`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "send_code", email }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao enviar código");
+
+      setForgotCodigoFallback(data.codigoFallback ?? null);
+      if (data.emailEnviado) {
+        toast.success("Código enviado! Verifique seu email.");
+      } else if (data.codigoFallback) {
+        toast.warning("Email não enviado. Use o código exibido na tela.");
       } else {
-        toast.success("Email de recuperação enviado! Verifique sua caixa de entrada.");
-        setMode("login");
+        toast.success("Se o email estiver cadastrado, você receberá um código.");
       }
+      setMode("forgot_code");
+      setForgotCode(["", "", "", ""]);
+      setForgotCodeError("");
+      setTimeout(() => forgotOtpRefs.current[0]?.focus(), 300);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao enviar código");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotOtpChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+    const newOtp = [...forgotCode];
+    newOtp[index] = value.slice(-1);
+    setForgotCode(newOtp);
+    setForgotCodeError("");
+    if (value && index < 3) {
+      forgotOtpRefs.current[index + 1]?.focus();
+    }
+    if (newOtp.every(d => d !== "") && newOtp.join("").length === 4) {
+      // Auto-advance to new password step
+      setMode("forgot_newpass");
+    }
+  };
+
+  const handleForgotOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !forgotCode[index] && index > 0) {
+      forgotOtpRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleForgotOtpPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 4);
+    if (pasted.length === 4) {
+      setForgotCode(pasted.split(""));
+      setMode("forgot_newpass");
+    }
+  };
+
+  const handleResetPassword = async () => {
+    const code = forgotCode.join("");
+    if (code.length !== 4) { toast.error("Digite o código de 4 dígitos"); return; }
+    if (!forgotNewPass || forgotNewPass.length < 6) { toast.error("Senha deve ter pelo menos 6 caracteres"); return; }
+    if (forgotNewPass !== forgotConfirmPass) { toast.error("As senhas não coincidem"); return; }
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/resetar-senha`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "verify_and_reset",
+            email,
+            code,
+            new_password: forgotNewPass,
+          }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao redefinir senha");
+
+      toast.success("Senha redefinida com sucesso! Faça login com sua nova senha.");
+      setMode("login");
+      setForgotCode(["", "", "", ""]);
+      setForgotNewPass("");
+      setForgotConfirmPass("");
+      setForgotCodigoFallback(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao redefinir senha");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendForgotCode = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/resetar-senha`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "send_code", email }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setForgotCodigoFallback(data.codigoFallback ?? null);
+      toast.success("Novo código enviado!");
+      setForgotCode(["", "", "", ""]);
+      setForgotCodeError("");
     } catch {
-      toast.error("Erro ao enviar email");
+      toast.error("Erro ao reenviar código");
     } finally {
       setIsLoading(false);
     }
@@ -353,7 +468,7 @@ export default function Auth() {
           <Brain className="h-10 w-10 text-primary" />
           <span className="text-3xl font-extrabold text-primary tracking-tight">AprovI.A</span>
         </div>
-        {mode !== "verify" && (
+        {mode !== "verify" && mode !== "forgot_code" && mode !== "forgot_newpass" && (
           <p className="text-muted-foreground text-sm">
             {mode === "login" && "Bem-vindo de volta! Entre para continuar."}
             {mode === "signup" && "Crie sua conta e comece a estudar agora!"}
@@ -570,12 +685,12 @@ export default function Auth() {
             </>
           )}
 
-          {/* ─── FORGOT PASSWORD ─── */}
+          {/* ─── FORGOT PASSWORD — Step 1: Enter Email ─── */}
           {mode === "forgot" && (
             <>
               <div className="text-center mb-6">
                 <h1 className="text-2xl font-bold text-foreground">Recuperar Senha</h1>
-                <p className="text-sm text-muted-foreground mt-1">Digite seu email e enviaremos um link de recuperação</p>
+                <p className="text-sm text-muted-foreground mt-1">Digite seu email e enviaremos um código de verificação</p>
               </div>
 
               <form onSubmit={handleForgot} className="space-y-4">
@@ -595,7 +710,7 @@ export default function Auth() {
                 </div>
 
                 <Button type="submit" className="w-full h-12 rounded-xl text-base font-bold gap-2" disabled={isLoading}>
-                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Enviar link de recuperação"}
+                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Enviar código de verificação"}
                 </Button>
               </form>
 
@@ -606,6 +721,154 @@ export default function Auth() {
                 </button>
               </p>
             </>
+          )}
+
+          {/* ─── FORGOT PASSWORD — Step 2: Enter OTP Code ─── */}
+          {mode === "forgot_code" && (
+            <div className="flex flex-col items-center">
+              <div className="relative mb-6">
+                <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
+                    <ShieldCheck className="h-8 w-8 text-primary" />
+                  </div>
+                </div>
+                <div className="absolute inset-0 rounded-full border-2 border-primary/30 animate-ping" />
+              </div>
+
+              <h1 className="text-2xl font-extrabold text-foreground text-center mb-2">
+                Código de recuperação
+              </h1>
+              <p className="text-muted-foreground text-sm text-center leading-relaxed mb-1">
+                Enviamos um código de 4 dígitos para:
+              </p>
+              <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 px-4 py-2 rounded-full mb-6">
+                <Mail className="h-4 w-4 text-primary" />
+                <span className="font-semibold text-primary text-sm">{email}</span>
+              </div>
+
+              {forgotCodigoFallback && (
+                <div className="w-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-4">
+                  <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-1">⚠️ Email não pôde ser enviado — código para teste:</p>
+                  <p className="text-2xl font-extrabold text-amber-800 dark:text-amber-300 tracking-widest text-center">{forgotCodigoFallback}</p>
+                </div>
+              )}
+
+              <div className="w-full mb-4">
+                <p className="text-sm font-semibold text-foreground text-center mb-4">Digite o código recebido</p>
+                <div className="flex justify-center gap-3" onPaste={handleForgotOtpPaste}>
+                  {forgotCode.map((digit, i) => (
+                    <input
+                      key={i}
+                      ref={el => { forgotOtpRefs.current[i] = el; }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={e => handleForgotOtpChange(i, e.target.value)}
+                      onKeyDown={e => handleForgotOtpKeyDown(i, e)}
+                      className={[
+                        "w-16 h-16 text-center text-2xl font-extrabold rounded-xl border-2 outline-none transition-all duration-200",
+                        "bg-background text-foreground",
+                        digit && !forgotCodeError ? "border-primary bg-primary/5 scale-105" : "",
+                        forgotCodeError ? "border-destructive bg-destructive/5" : "",
+                        !digit && !forgotCodeError ? "border-border" : "",
+                        "focus:border-primary focus:ring-2 focus:ring-primary/20 focus:scale-105",
+                      ].join(" ")}
+                    />
+                  ))}
+                </div>
+
+                {forgotCodeError && (
+                  <div className="mt-3 bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-center">
+                    <p className="text-sm text-destructive font-medium">{forgotCodeError}</p>
+                  </div>
+                )}
+              </div>
+
+              <p className="text-xs text-muted-foreground text-center mb-5">
+                O código expira em <strong>10 minutos</strong>
+              </p>
+
+              <button
+                onClick={handleResendForgotCode}
+                disabled={isLoading}
+                className="flex items-center gap-2 text-sm font-medium text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed transition-opacity mb-4"
+              >
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                Reenviar código
+              </button>
+
+              <button
+                onClick={() => setMode("forgot")}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                ← Voltar
+              </button>
+            </div>
+          )}
+
+          {/* ─── FORGOT PASSWORD — Step 3: New Password ─── */}
+          {mode === "forgot_newpass" && (
+            <div className="flex flex-col items-center">
+              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                <Lock className="h-8 w-8 text-primary" />
+              </div>
+
+              <h1 className="text-2xl font-extrabold text-foreground text-center mb-2">
+                Nova senha
+              </h1>
+              <p className="text-muted-foreground text-sm text-center mb-6">
+                Código verificado! Defina sua nova senha abaixo.
+              </p>
+
+              <div className="w-full space-y-3">
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                    Nova Senha
+                  </label>
+                  <Input
+                    type="password"
+                    placeholder="Mínimo 6 caracteres"
+                    value={forgotNewPass}
+                    onChange={(e) => setForgotNewPass(e.target.value)}
+                    className="h-11 rounded-lg"
+                    autoFocus
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                    Confirmar Senha
+                  </label>
+                  <Input
+                    type="password"
+                    placeholder="Repita a senha"
+                    value={forgotConfirmPass}
+                    onChange={(e) => setForgotConfirmPass(e.target.value)}
+                    className="h-11 rounded-lg"
+                  />
+                </div>
+
+                <Button
+                  className="w-full h-12 rounded-xl text-base font-bold gap-2"
+                  onClick={handleResetPassword}
+                  disabled={isLoading}
+                >
+                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (
+                    <>Redefinir Senha <Sparkles className="h-4 w-4" /></>
+                  )}
+                </Button>
+              </div>
+
+              <button
+                onClick={() => setMode("forgot_code")}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors mt-4"
+              >
+                ← Voltar ao código
+              </button>
+            </div>
           )}
 
           {/* ─── VERIFY OTP ─── */}
