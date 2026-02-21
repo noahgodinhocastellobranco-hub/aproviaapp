@@ -41,6 +41,21 @@ export default function Precos() {
     return () => subscription.unsubscribe();
   }, [searchParams]);
 
+  // Poll premium status while checkout is open
+  useEffect(() => {
+    if (!checkoutOpen || !isLoggedIn) return;
+    const interval = setInterval(async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      const { data } = await supabase.from("profiles").select("is_premium").eq("id", session.user.id).single();
+      if (data?.is_premium) {
+        setCheckoutOpen(false);
+        navigate("/dashboard");
+      }
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [checkoutOpen, isLoggedIn, navigate]);
+
   const handleComprar = () => {
     if (isPremium) {
       navigate("/dashboard");
@@ -50,7 +65,6 @@ export default function Precos() {
       navigate("/auth");
     }
   };
-
 
   return (
     <div className="min-h-screen bg-background text-foreground">
