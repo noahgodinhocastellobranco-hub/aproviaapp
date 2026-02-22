@@ -52,8 +52,10 @@ export default function Auth() {
 
   useEffect(() => {
     const redirectUser = async (userId: string) => {
-      const { data } = await supabase.from("profiles").select("is_premium").eq("id", userId).single();
-      if (data?.is_premium) {
+      // Verificar se email foi confirmado
+      const { data: profileCheck } = await supabase.from("profiles").select("is_premium, email_verified").eq("id", userId).single();
+      if (profileCheck && !profileCheck.email_verified) return; // Não redireciona se não verificou
+      if (profileCheck?.is_premium) {
         navigate("/dashboard");
       } else {
         navigate("/precos");
@@ -73,16 +75,30 @@ export default function Auth() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data: loginData, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         if (error.message.includes("Invalid login credentials")) {
           toast.error("Email ou senha incorretos");
         } else {
           toast.error(error.message);
         }
-      } else {
-        toast.success("Login realizado com sucesso!");
+        return;
       }
+
+      // Verificar se o email foi confirmado via OTP
+      const userId = loginData.user?.id;
+      if (userId) {
+        const { data: profile } = await supabase.from("profiles").select("email_verified").eq("id", userId).single();
+        if (profile && !profile.email_verified) {
+          // Email não verificado — enviar código e mostrar tela de verificação
+          setSignedUpUserId(userId);
+          await sendCodeAndShowVerify();
+          toast.info("Verifique seu email para continuar.");
+          return;
+        }
+      }
+
+      toast.success("Login realizado com sucesso!");
     } catch {
       toast.error("Erro ao fazer login");
     } finally {
@@ -254,11 +270,16 @@ export default function Auth() {
         return;
       }
 
-      // Marcar como usado
+      // Marcar como usado e marcar email como verificado
       await supabase
         .from("verification_codes")
         .update({ used_at: new Date().toISOString() })
         .eq("id", record.id);
+
+      await supabase
+        .from("profiles")
+        .update({ email_verified: true })
+        .eq("id", userId);
 
       // Enviar email de boas-vindas em background (não bloqueia o fluxo)
       const sessionData = await supabase.auth.getSession();
