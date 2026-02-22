@@ -65,10 +65,19 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Protect owner accounts
+    const PROTECTED_EMAILS = ["noahgodinhocastellobranco@gmail.com"];
     const adminClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+    const { data: targetProfile } = await adminClient.from("profiles").select("email").eq("id", user_id).single();
+    if (targetProfile && PROTECTED_EMAILS.includes((targetProfile.email ?? "").toLowerCase())) {
+      return new Response(JSON.stringify({ error: "Esta conta é protegida e não pode ser excluída" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Delete profile first (in case there's no cascade)
     await adminClient.from("profiles").delete().eq("id", user_id);
