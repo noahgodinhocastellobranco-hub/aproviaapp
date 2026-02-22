@@ -86,6 +86,8 @@ const PENDING  = ["pending", "waiting_payment"];
 type Tab = "dashboard" | "usuarios" | "vendas" | "premium" | "criar" | "notificacoes" | "estatisticas";
 type StatusFilter = "all" | "approved" | "pending" | "refunded";
 
+const PROTECTED_EMAILS = ["noahgodinhocastellobranco@gmail.com"];
+
 // ── Component ────────────────────────────────────────────────────────────────
 export default function Admin() {
   const navigate = useNavigate();
@@ -230,6 +232,10 @@ export default function Admin() {
   const handleRevokePremium = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!revokeEmail.trim()) return;
+    if (PROTECTED_EMAILS.includes(revokeEmail.trim().toLowerCase())) {
+      toast.error("Esta conta é protegida e não pode perder o PRO.");
+      return;
+    }
     setRevokeLoading(true);
     const { error } = await supabase.from("profiles").update({ is_premium: false }).eq("email", revokeEmail.trim().toLowerCase());
     if (error) toast.error("Erro: " + error.message);
@@ -238,6 +244,10 @@ export default function Admin() {
   };
 
   const handleTogglePremium = async (profile: Profile) => {
+    if (PROTECTED_EMAILS.includes((profile.email ?? "").toLowerCase()) && profile.is_premium) {
+      toast.error("Esta conta é protegida e não pode perder o PRO.");
+      return;
+    }
     const { error } = await supabase.from("profiles").update({ is_premium: !profile.is_premium }).eq("id", profile.id);
     if (error) toast.error("Erro ao alterar premium");
     else {
@@ -247,6 +257,10 @@ export default function Admin() {
   };
 
   const handleDeleteUser = async (profile: Profile) => {
+    if (PROTECTED_EMAILS.includes((profile.email ?? "").toLowerCase())) {
+      toast.error("Esta conta é protegida e não pode ser excluída.");
+      return;
+    }
     if (!confirm(`Tem certeza que deseja EXCLUIR PERMANENTEMENTE a conta de ${profile.email}?\nTodos os dados serão removidos e o email ficará disponível para novo cadastro.`)) return;
     setDeletingUserId(profile.id);
     try {
