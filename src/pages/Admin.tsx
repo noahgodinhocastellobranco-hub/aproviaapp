@@ -247,14 +247,20 @@ export default function Admin() {
   };
 
   const handleDeleteUser = async (profile: Profile) => {
-    if (!confirm(`Tem certeza que deseja desativar a conta de ${profile.email}?\nEla ficará inacessível.`)) return;
+    if (!confirm(`Tem certeza que deseja EXCLUIR PERMANENTEMENTE a conta de ${profile.email}?\nTodos os dados serão removidos e o email ficará disponível para novo cadastro.`)) return;
     setDeletingUserId(profile.id);
-    const { error } = await supabase
-      .from("profiles")
-      .update({ is_premium: false, deleted_at: new Date().toISOString() } as any)
-      .eq("id", profile.id);
-    if (error) toast.error("Erro ao desativar: " + error.message);
-    else { toast.success(`🗑️ Conta de ${profile.email} desativada`); loadUsers(); }
+    try {
+      const res = await supabase.functions.invoke("admin-delete-user", {
+        body: { user_id: profile.id },
+      });
+      if (res.error) throw new Error(res.error.message);
+      const data = res.data as any;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`🗑️ Conta de ${profile.email} excluída permanentemente`);
+      loadUsers();
+    } catch (err: any) {
+      toast.error("Erro ao excluir: " + (err.message ?? "Falha"));
+    }
     setDeletingUserId(null);
   };
 
