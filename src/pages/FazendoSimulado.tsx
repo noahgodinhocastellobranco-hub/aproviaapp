@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Clock, Play, Pause, RotateCcw, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
+import { saveSimulado } from "@/lib/progresso";
 
 export default function FazendoSimulado() {
   const totalSeconds = 5 * 60 * 60 + 30 * 60; // 5 horas e 30 minutos
@@ -20,6 +21,11 @@ export default function FazendoSimulado() {
           if (prev <= 1) {
             setIsRunning(false);
             setIsFinished(true);
+            saveSimulado({
+              data: new Date().toISOString(),
+              duracaoSegundos: totalSeconds,
+              concluido: true,
+            });
             toast({
               title: "Tempo esgotado!",
               description: "O tempo do simulado terminou.",
@@ -51,6 +57,11 @@ export default function FazendoSimulado() {
   const handleStart = () => {
     setIsRunning(true);
     setIsFinished(false);
+    saveSimulado({
+      data: new Date().toISOString(),
+      duracaoSegundos: 0,
+      concluido: false,
+    });
     toast({
       title: "Simulado iniciado!",
       description: "Boa sorte! Gerencie bem seu tempo.",

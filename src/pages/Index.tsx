@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen, Brain, CheckCircle2, FileText, MessageSquare, PenTool, Sparkles, Star, Target, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
+import DashboardProgresso from "@/components/DashboardProgresso";
 
 export default function Index() {
   return (
@@ -91,6 +92,9 @@ export default function Index() {
             </div>
           </div>
         </div>
+
+        {/* Dashboard de Progresso */}
+        <DashboardProgresso />
 
         {/* Feature Cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto mb-16">

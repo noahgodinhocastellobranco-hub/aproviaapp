@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FormattedText from "@/components/FormattedText";
+import { saveRedacao } from "@/lib/progresso";
 
 const competenciasInfo = [
   { nome: "Domínio da norma culta", descricao: "Modalidade escrita formal da língua portuguesa" },
@@ -124,6 +125,13 @@ export default function Redacao() {
       if (error) throw error;
 
       setResultado(data);
+      if (data?.nota) {
+        saveRedacao({
+          nota: data.nota,
+          data: new Date().toISOString(),
+          competencias: data.competencias,
+        });
+      }
       toast({
         title: "Redação avaliada!",
         description: "Confira sua nota e feedback abaixo.",
