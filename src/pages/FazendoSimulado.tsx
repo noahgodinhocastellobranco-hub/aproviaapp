@@ -21,6 +21,11 @@ export default function FazendoSimulado() {
           if (prev <= 1) {
             setIsRunning(false);
             setIsFinished(true);
+            saveSimulado({
+              data: new Date().toISOString(),
+              duracaoSegundos: totalSeconds,
+              concluido: true,
+            });
             toast({
               title: "Tempo esgotado!",
               description: "O tempo do simulado terminou.",
