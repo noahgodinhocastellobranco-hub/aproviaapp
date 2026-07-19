@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Clock, Play, Pause, RotateCcw, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
+import { saveSimulado } from "@/lib/progresso";
 
 export default function FazendoSimulado() {
   const totalSeconds = 5 * 60 * 60 + 30 * 60; // 5 horas e 30 minutos
