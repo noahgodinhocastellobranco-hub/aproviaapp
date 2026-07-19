@@ -90,6 +90,7 @@ export default function Rotina() {
 
       if (data?.rotina) {
         setRoutine(data);
+        saveRotina(data.rotina, data.horasEstudoSemana);
         toast({
           title: "Rotina gerada! 🎉",
           description: "Sua rotina personalizada de estudos está pronta.",
