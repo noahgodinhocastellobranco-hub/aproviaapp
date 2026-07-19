@@ -93,6 +93,9 @@ export default function Index() {
           </div>
         </div>
 
+        {/* Dashboard de Progresso */}
+        <DashboardProgresso />
+
         {/* Feature Cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto mb-16">
           <Card className="text-center border border-border bg-card hover:shadow-lg transition-shadow rounded-2xl">
