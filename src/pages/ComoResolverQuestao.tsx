@@ -216,11 +216,9 @@ export default function ComoResolverQuestao() {
                 <CardContent>
                   <div className="bg-card rounded-xl p-6 border border-primary/20">
                     <div className="prose prose-sm max-w-none dark:prose-invert">
-                      <div
-                        className="whitespace-pre-wrap leading-relaxed"
-                        dangerouslySetInnerHTML={{
-                          __html: resolucao.replace(/\n/g, "<br/>"),
-                        }}
+                      <FormattedText
+                        text={resolucao}
+                        className="whitespace-pre-wrap leading-relaxed block"
                       />
                     </div>
                   </div>
