@@ -57,6 +57,11 @@ export default function FazendoSimulado() {
   const handleStart = () => {
     setIsRunning(true);
     setIsFinished(false);
+    saveSimulado({
+      data: new Date().toISOString(),
+      duracaoSegundos: 0,
+      concluido: false,
+    });
     toast({
       title: "Simulado iniciado!",
       description: "Boa sorte! Gerencie bem seu tempo.",
