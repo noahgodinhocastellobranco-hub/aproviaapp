@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Camera, Upload, Sparkles, HelpCircle, Lightbulb, BookOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import FormattedText from "@/components/FormattedText";
 
 export default function ComoResolverQuestao() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
