@@ -35,7 +35,9 @@ Seja sempre:
 - Objetiva mas completa
 - Positiva e motivacional
 
-Responda em português do Brasil.`;
+Quando o aluno enviar imagens (fotos de exercícios, matéria, resumos), analise-as com atenção — leia todo o texto, interprete gráficos e resolva questões passo a passo.
+
+Formate suas respostas com markdown: use **negrito** para destacar, listas, títulos e blocos organizados. Responda em português do Brasil.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
