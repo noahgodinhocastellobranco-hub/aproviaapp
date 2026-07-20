@@ -127,15 +127,13 @@ export function AppSidebar() {
             <ThemeToggle />
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <a
-              href="https://aproviapagina.lovable.app"
-              target="_blank"
-              rel="noopener noreferrer"
+            <NavLink
+              to="/"
               className="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-primary/10 transition-all duration-200 no-underline text-primary"
             >
               <ExternalLink className="h-4 w-4 flex-shrink-0" />
               <span className="text-sm font-medium">Página Inicial</span>
-            </a>
+            </NavLink>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
