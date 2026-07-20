@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { BookOpen, Bot, Brain, Camera, CheckCircle2, Clock, Crown, FileText, GraduationCap, Headphones, HelpCircle, LayoutDashboard, LogOut, Menu, MessageSquare, PenTool, Settings, Sparkles, Target, Timer, Trophy, User, X, Zap } from "lucide-react";
+import { InstallAppDialog } from "@/components/InstallAppDialog";
+import { BookOpen, Bot, Brain, Camera, CheckCircle2, Clock, Crown, Download, FileText, GraduationCap, Headphones, HelpCircle, LayoutDashboard, LogOut, Menu, MessageSquare, PenTool, Settings, Sparkles, Target, Timer, Trophy, User, X, Zap } from "lucide-react";
 
 const tools = [
   { title: "Redação", desc: "Correção no padrão ENEM com nota por competência.", href: "/redacao", icon: PenTool, badge: "MAIS USADO" },
@@ -63,6 +64,7 @@ export default function Index() {
       <span className="hidden max-w-[220px] truncate text-sm font-semibold text-foreground lg:inline">{profile.email}</span>
       <Button variant="outline" onClick={() => navigate("/configuracoes")}><Settings className="mr-2 h-4 w-4" />Configurações</Button>
       <Button variant="outline" onClick={() => navigate("/suporte")}><Headphones className="mr-2 h-4 w-4" />Suporte</Button>
+      <InstallAppDialog trigger={<Button variant="outline"><Download className="mr-2 h-4 w-4" />Baixar App</Button>} />
       <Button onClick={() => navigate(profile.is_premium ? "/dashboard" : "/precos")}><Crown className="mr-2 h-4 w-4" />{profile.is_premium ? "Meu PRO" : "Assinar PRO"}</Button>
       <Button variant="ghost" onClick={signOut}><LogOut className="mr-2 h-4 w-4" />Minha Conta</Button>
     </>
