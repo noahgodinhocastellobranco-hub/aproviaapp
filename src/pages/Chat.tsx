@@ -18,6 +18,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { supabase } from "@/integrations/supabase/client";
 import FormattedText from "@/components/FormattedText";
 import { cn } from "@/lib/utils";
 
