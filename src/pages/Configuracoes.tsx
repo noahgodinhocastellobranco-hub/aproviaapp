@@ -35,6 +35,25 @@ export default function Configuracoes() {
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const uploadAvatar = async (file: File) => {
+    if (!profile) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error("A imagem deve ter até 5MB."); return; }
+    setUploadingAvatar(true);
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${profile.id}/avatar-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+    if (upErr) { setUploadingAvatar(false); toast.error("Falha ao enviar imagem."); return; }
+    const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+    const url = `${pub.publicUrl}?v=${Date.now()}`;
+    const { error } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", profile.id);
+    setUploadingAvatar(false);
+    if (error) { toast.error("Não foi possível salvar a foto."); return; }
+    setProfile({ ...profile, avatar_url: url });
+    toast.success("Foto de perfil atualizada!");
+  };
+
 
   const loadProfile = async () => {
     const { data: { user } } = await supabase.auth.getUser();
