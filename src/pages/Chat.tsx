@@ -92,10 +92,21 @@ export default function Chat() {
   const [input, setInput] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [userName, setUserName] = useState<string>("");
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-aprovia`;
+
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("profiles").select("nome, email").eq("id", user.id).maybeSingle();
+      const nome = (data?.nome || data?.email || user.email || "").trim();
+      setUserName(nome.split(" ")[0] || nome.split("@")[0] || "");
+    })();
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
