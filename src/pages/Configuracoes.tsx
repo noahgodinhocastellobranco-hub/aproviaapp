@@ -9,7 +9,18 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { ArrowLeft, Brain, Camera, CheckCircle2, Crown, KeyRound, LogOut, Mail, MessageCircle, Save, Settings, Shield, User } from "lucide-react";
+import { ArrowLeft, Brain, Camera, CheckCircle2, Crown, KeyRound, LogOut, Mail, MessageCircle, Save, Settings, Shield, User, XCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type Profile = {
   id: string;
@@ -36,6 +47,23 @@ export default function Configuracoes() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+
+  const cancelPlan = async () => {
+    setCancelling(true);
+    const { data, error } = await supabase.functions.invoke("cancelar-assinatura");
+    setCancelling(false);
+    if (error) {
+      toast.error("Não foi possível cancelar. Tente novamente ou fale com o suporte.");
+      return;
+    }
+    if (data?.cakto?.attempted && !data?.cakto?.ok) {
+      toast.warning("Plano encerrado no app. A cobrança do cartão pode levar alguns minutos para ser interrompida na Cakto.");
+    } else {
+      toast.success("Assinatura cancelada. Você não será mais cobrado.");
+    }
+    loadProfile();
+  };
 
   const uploadAvatar = async (file: File) => {
     if (!profile) return;
@@ -217,6 +245,33 @@ export default function Configuracoes() {
             <Card>
               <CardContent className="space-y-3 p-5">
                 <div className="flex items-center gap-2 font-bold text-foreground"><Shield className="h-5 w-5 text-primary" /> Segurança</div>
+                {profile?.is_premium && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" className="w-full border-destructive/40 text-destructive hover:bg-destructive/10">
+                        <XCircle className="mr-2 h-4 w-4" /> Cancelar Plano PRO
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Ao confirmar, sua assinatura será encerrada e a cobrança recorrente no seu cartão será interrompida na Cakto. Você perderá acesso aos recursos PRO imediatamente.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel disabled={cancelling}>Voltar</AlertDialogCancel>
+                        <AlertDialogAction
+                          disabled={cancelling}
+                          onClick={cancelPlan}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          {cancelling ? "Cancelando..." : "Sim, cancelar plano"}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
                 <Button variant="destructive" className="w-full" onClick={signOut}><LogOut className="mr-2 h-4 w-4" /> Sair da Conta</Button>
               </CardContent>
             </Card>
