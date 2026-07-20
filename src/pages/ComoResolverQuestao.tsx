@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Camera, Upload, Sparkles, HelpCircle, Lightbulb, BookOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import FormattedText from "@/components/FormattedText";
 
 export default function ComoResolverQuestao() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -217,9 +216,11 @@ export default function ComoResolverQuestao() {
                 <CardContent>
                   <div className="bg-card rounded-xl p-6 border border-primary/20">
                     <div className="prose prose-sm max-w-none dark:prose-invert">
-                      <FormattedText
-                        text={resolucao}
-                        className="whitespace-pre-wrap leading-relaxed block"
+                      <div
+                        className="whitespace-pre-wrap leading-relaxed"
+                        dangerouslySetInnerHTML={{
+                          __html: resolucao.replace(/\n/g, "<br/>"),
+                        }}
                       />
                     </div>
                   </div>

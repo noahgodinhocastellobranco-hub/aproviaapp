@@ -6,12 +6,10 @@ import { PWAOfflineIndicator } from "./PWAOfflineIndicator";
 import { PWAInstallBanner } from "./PWAInstallBanner";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useUsoTracker } from "@/hooks/useUsoTracker";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { setOpen } = useSidebar();
   const isMobile = useIsMobile();
-  useUsoTracker();
 
   useSwipeGesture({
     onSwipeRight: () => {

@@ -1,13 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { requirePremiumUser, corsHeaders } from "../_shared/auth.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
-
-  const auth = await requirePremiumUser(req);
-  if (!auth.ok) return auth.response!;
 
   try {
     const { scheduleData } = await req.json();

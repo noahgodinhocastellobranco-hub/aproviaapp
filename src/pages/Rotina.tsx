@@ -10,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Clock, BookOpen, Loader2, Sparkles, Coffee, School, Pencil, RefreshCw, Brain } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { saveRotina } from "@/lib/progresso";
 
 const diasSemana = [
   { id: "segunda", label: "Segunda" },
@@ -90,7 +89,6 @@ export default function Rotina() {
 
       if (data?.rotina) {
         setRoutine(data);
-        saveRotina(data.rotina, data.horasEstudoSemana);
         toast({
           title: "Rotina gerada! 🎉",
           description: "Sua rotina personalizada de estudos está pronta.",
