@@ -61,3 +61,18 @@ verify_jwt = false
 
 [functions.gerar-rotina]
 verify_jwt = false
+
+[functions.enviar-codigo-otp]
+verify_jwt = false
+
+[functions.resetar-senha]
+verify_jwt = false
+
+[functions.enviar-boas-vindas]
+verify_jwt = false
+
+[functions.cakto-webhook]
+verify_jwt = false
+
+[functions.admin-delete-user]
+verify_jwt = false

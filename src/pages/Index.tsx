@@ -1,211 +1,218 @@
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { BookOpen, Brain, CheckCircle2, FileText, MessageSquare, PenTool, Sparkles, Star, Target, Zap } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { BookOpen, Bot, Brain, Camera, CheckCircle2, Clock, Crown, FileText, GraduationCap, Headphones, HelpCircle, LayoutDashboard, LogOut, Menu, MessageSquare, PenTool, Settings, Sparkles, Target, Timer, Trophy, User, X, Zap } from "lucide-react";
+
+const tools = [
+  { title: "Redação", desc: "Correção no padrão ENEM com nota por competência.", href: "/redacao", icon: PenTool, badge: "MAIS USADO" },
+  { title: "Chat AprovI.A", desc: "Tire dúvidas de qualquer matéria em segundos.", href: "/chat", icon: MessageSquare },
+  { title: "Simulados", desc: "Treinos completos e provas para evoluir.", href: "/simulados", icon: Trophy },
+  { title: "Professora Virtual", desc: "Explicações em texto e voz, do seu jeito.", href: "/professora-virtual", icon: Bot },
+  { title: "Resolver Questão", desc: "Envie foto da questão e receba a solução.", href: "/resolver-questao", icon: Camera },
+  { title: "Prova ENEM", desc: "Experiência exclusiva com questões geradas por IA.", href: "/prova-enem", icon: FileText },
+  { title: "Rotina", desc: "Plano semanal personalizado para sua realidade.", href: "/rotina", icon: Clock },
+  { title: "Pomodoro", desc: "Cronômetro de foco para manter constância.", href: "/pomodoro", icon: Timer },
+  { title: "Materiais", desc: "Conteúdo organizado por área do ENEM.", href: "/materiais-estudo", icon: BookOpen },
+];
+
+const faqs = [
+  { q: "Preciso pagar antes de criar conta?", a: "Não. Você cria sua conta, confirma o código no email e só depois escolhe o plano." },
+  { q: "O checkout abre fora do site?", a: "Não. A compra abre em uma janela dentro da própria página e o sistema libera o PRO automaticamente após aprovação." },
+  { q: "As ferramentas são para o ENEM 2026?", a: "Sim. O painel, simulados, redação e rotina foram pensados para preparação do ENEM 2026." },
+  { q: "Tenho suporte se precisar de ajuda?", a: "Sim. O suporte funciona por WhatsApp e email pela página de suporte." },
+];
+
+type Profile = { email: string | null; nome: string | null; is_premium: boolean };
 
 export default function Index() {
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const [{ data: profileData }, { data: adminRole }] = await Promise.all([
+        supabase.from("profiles").select("email,nome,is_premium").eq("id", user.id).maybeSingle(),
+        supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }),
+      ]);
+      setProfile(profileData || { email: user.email || null, nome: null, is_premium: false });
+      setIsAdmin(!!adminRole);
+    };
+    load();
+  }, []);
+
+  const firstName = useMemo(() => profile?.nome?.split(" ")[0] || profile?.email?.split("@")[0] || "Aluno", [profile]);
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setProfile(null);
+    setIsAdmin(false);
+    setMenuOpen(false);
+  };
+
+  const AuthButtons = () => profile ? (
+    <>
+      <span className="hidden max-w-[220px] truncate text-sm font-semibold text-foreground lg:inline">{profile.email}</span>
+      <Button variant="outline" onClick={() => navigate("/configuracoes")}><Settings className="mr-2 h-4 w-4" />Configurações</Button>
+      <Button variant="outline" onClick={() => navigate("/suporte")}><Headphones className="mr-2 h-4 w-4" />Suporte</Button>
+      <Button onClick={() => navigate(profile.is_premium ? "/dashboard" : "/precos")}><Crown className="mr-2 h-4 w-4" />{profile.is_premium ? "Meu PRO" : "Assinar PRO"}</Button>
+      <Button variant="ghost" onClick={signOut}><LogOut className="mr-2 h-4 w-4" />Minha Conta</Button>
+    </>
+  ) : (
+    <>
+      <Button asChild variant="outline"><Link to="/auth">Login / Criar Conta</Link></Button>
+      <Button asChild><Link to="/precos">Começar Agora</Link></Button>
+    </>
+  );
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Alert Banner */}
-      <div className="flex justify-center pt-8 pb-4 px-4">
-        <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-destructive/10 border border-destructive/20">
-          <span className="text-destructive text-sm font-medium">
-            ⚡ ENEM 2026 está chegando — Comece a estudar agora
-          </span>
+    <main className="min-h-screen bg-background">
+      <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+          <button onClick={() => navigate("/")} className="flex items-center gap-3" aria-label="AprovI.A início">
+            <Brain className="h-9 w-9 text-primary" style={{ animation: "logo-float 3s ease-in-out infinite, logo-glow 3s ease-in-out infinite" }} />
+            <span className="text-2xl font-black text-primary">AprovI.A</span>
+          </button>
+          <nav className="hidden items-center gap-2 md:flex">
+            <ThemeToggle />
+            <AuthButtons />
+          </nav>
+          <Button variant="outline" size="icon" className="md:hidden" onClick={() => setMenuOpen(!menuOpen)} aria-label="Abrir menu">
+            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
         </div>
-      </div>
-
-      {/* Hero Section */}
-      <div className="container mx-auto px-4 pt-8 pb-16">
-        <div className="text-center max-w-4xl mx-auto">
-          {/* Logo + Title */}
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <Brain className="h-14 w-14 md:h-16 md:w-16 text-primary" />
-            <h1 className="text-4xl md:text-6xl font-bold text-primary/40">
-              Aprovação A
-            </h1>
+        {menuOpen && (
+          <div className="border-t border-border bg-card p-4 md:hidden">
+            <div className="flex flex-col gap-2"><ThemeToggle /><AuthButtons /></div>
           </div>
+        )}
+      </header>
 
-          {/* Main Headline */}
-          <div className="mb-8">
-            <h2 className="text-3xl md:text-5xl font-extrabold leading-tight">
-              <span className="text-foreground">Sua </span>
-              <span className="text-primary">Inteligência Artificial</span>
-              <br />
-              <span className="text-foreground">para </span>
-              <span className="text-success">passar no ENEM</span>
-            </h2>
+      <section className="px-4 pb-12 pt-7 sm:px-6 lg:pb-16">
+        <div className="mx-auto max-w-7xl text-center">
+          <div className="mb-6 flex justify-center">
+            <Badge variant="outline" className="border-destructive/30 bg-destructive/10 px-5 py-2 text-destructive">⚡ ENEM 2026 está chegando — comece hoje</Badge>
           </div>
-
-          {/* Subtitle */}
-          <p className="text-base md:text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-            <span className="font-semibold text-foreground">Correção de redação em segundos</span>
-            , chat para tirar dúvidas 24/7 e plano de estudos personalizado — tudo com inteligência artificial.
+          <div className="mb-6 flex justify-center">
+            <Brain className="h-24 w-24 text-primary sm:h-32 sm:w-32" style={{ animation: "logo-float 3s ease-in-out infinite, logo-glow 3s ease-in-out infinite" }} />
+          </div>
+          <h1 className="mx-auto max-w-5xl text-4xl font-black leading-tight text-foreground sm:text-6xl lg:text-7xl">
+            Sua <span className="text-primary">Inteligência Artificial</span> para passar no <span className="text-success">ENEM</span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-3xl text-lg font-medium text-muted-foreground sm:text-xl">
+            Correção de redação, chat de dúvidas, simulados, professora virtual e plano de estudos personalizado em uma única plataforma.
           </p>
-
-          {/* Feature Pills */}
-          <div className="flex flex-wrap justify-center gap-3 mb-10">
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-border bg-card shadow-sm">
-              <Zap className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-foreground">Correção instantânea de redação</span>
-            </div>
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-border bg-card shadow-sm">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-foreground">Bate-papo com IA especializada</span>
-            </div>
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-border bg-card shadow-sm">
-              <Star className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-foreground">100% gratuito</span>
-            </div>
-          </div>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <Button asChild size="lg" className="text-base md:text-lg px-10 py-6 rounded-xl font-bold uppercase tracking-wide">
-              <Link to="/chat">
-                <Sparkles className="mr-2 h-5 w-5" />
-                Começar Agora
-                <span className="ml-2">→</span>
-              </Link>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <Button size="lg" className="text-base font-black" onClick={() => navigate(profile?.is_premium ? "/dashboard" : "/precos")}>
+              <Sparkles className="mr-2 h-5 w-5" /> Começar Agora
             </Button>
-            <Button asChild size="lg" variant="outline" className="text-base md:text-lg px-10 py-6 rounded-xl font-medium">
-              <Link to="/auth">
-                Já tenho conta
-              </Link>
+            <Button size="lg" variant="outline" onClick={() => navigate(profile ? "/dashboard" : "/auth")}>
+              <User className="mr-2 h-5 w-5" /> {profile ? `Entrar como ${firstName}` : "Já tenho conta"}
             </Button>
           </div>
+          {isAdmin && (
+            <Button className="mt-4 font-black" variant="destructive" onClick={() => navigate("/admin")}>
+              <LayoutDashboard className="mr-2 h-5 w-5" /> Modo Administração
+            </Button>
+          )}
+        </div>
+      </section>
 
-          {/* Trust Indicators */}
-          <div className="flex flex-wrap justify-center gap-6 mb-16">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckCircle2 className="h-4 w-4 text-success" />
-              <span>Totalmente gratuito</span>
+      <section className="border-y border-border bg-muted/40 px-4 py-12 sm:px-6">
+        <div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-2">
+          <div className="rounded-2xl border border-destructive/20 bg-card p-6 shadow-sm">
+            <h2 className="mb-4 text-2xl font-black text-foreground">Estudo tradicional</h2>
+            <div className="space-y-3 text-muted-foreground">
+              <p>Material solto, correção demorada, dúvidas acumuladas e rotina sem direção.</p>
+              <p>Você perde tempo tentando descobrir o que estudar antes de realmente estudar.</p>
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckCircle2 className="h-4 w-4 text-success" />
-              <span>Sem cartão de crédito</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckCircle2 className="h-4 w-4 text-success" />
-              <span>IA humanizada</span>
+          </div>
+          <div className="rounded-2xl border border-primary/30 bg-card p-6 shadow-lg">
+            <h2 className="mb-4 text-2xl font-black text-primary">Com AprovI.A</h2>
+            <div className="space-y-3 text-muted-foreground">
+              <p>IA guiando redação, dúvidas, simulados, rotina e revisão em tempo real.</p>
+              <p>Você entra, escolhe a ferramenta e começa a evoluir com foco no ENEM.</p>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* Feature Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto mb-16">
-          <Card className="text-center border border-border bg-card hover:shadow-lg transition-shadow rounded-2xl">
-            <CardContent className="pt-8 pb-6 px-6">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 rounded-xl bg-primary/10">
-                  <Zap className="h-7 w-7 text-primary" />
-                </div>
-              </div>
-              <h3 className="font-bold text-foreground mb-1">Redação Corrigida</h3>
-              <p className="text-sm text-muted-foreground">Em segundos com feedback</p>
-              <Button asChild variant="ghost" className="mt-4 w-full text-primary">
-                <Link to="/redacao">Praticar →</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center border border-border bg-card hover:shadow-lg transition-shadow rounded-2xl">
-            <CardContent className="pt-8 pb-6 px-6">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 rounded-xl bg-primary/10">
-                  <MessageSquare className="h-7 w-7 text-primary" />
-                </div>
-              </div>
-              <h3 className="font-bold text-foreground mb-1">Tire Dúvidas 24/7</h3>
-              <p className="text-sm text-muted-foreground">IA especializada para o ENEM</p>
-              <Button asChild variant="ghost" className="mt-4 w-full text-primary">
-                <Link to="/chat">Conversar →</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center border border-border bg-card hover:shadow-lg transition-shadow rounded-2xl">
-            <CardContent className="pt-8 pb-6 px-6">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 rounded-xl bg-primary/10">
-                  <Target className="h-7 w-7 text-primary" />
-                </div>
-              </div>
-              <h3 className="font-bold text-foreground mb-1">Plano Personalizado</h3>
-              <p className="text-sm text-muted-foreground">Baseado nas suas dificuldades</p>
-              <Button asChild variant="ghost" className="mt-4 w-full text-primary">
-                <Link to="/materias">Explorar →</Link>
-              </Button>
-            </CardContent>
-          </Card>
+      <section className="px-4 py-14 sm:px-6">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-black text-foreground sm:text-5xl">Tudo que você precisa para estudar</h2>
+            <p className="mt-3 text-muted-foreground">Ferramentas conectadas para transformar esforço em evolução real.</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {tools.map((tool) => {
+              const Icon = tool.icon;
+              return (
+                <Card key={tool.title} className="group border-border transition hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg">
+                  <CardContent className="p-5">
+                    <div className="mb-4 flex items-start justify-between gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary"><Icon className="h-6 w-6" /></div>
+                      {tool.badge && <Badge className="bg-success text-success-foreground">{tool.badge}</Badge>}
+                    </div>
+                    <h3 className="text-xl font-black text-foreground">{tool.title}</h3>
+                    <p className="mt-2 min-h-[48px] text-sm text-muted-foreground">{tool.desc}</p>
+                    <Button asChild variant="ghost" className="mt-4 w-full justify-between text-primary">
+                      <Link to={tool.href}>Abrir ferramenta <Zap className="h-4 w-4" /></Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
+      </section>
 
-        {/* Secondary Features */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto mb-16">
-          <Card className="border border-border bg-card hover:shadow-lg transition-shadow rounded-2xl">
-            <CardContent className="pt-6 pb-6 px-6">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <FileText className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="font-bold text-foreground">Simulados Oficiais</h3>
-              </div>
-              <p className="text-sm text-muted-foreground mb-3">Acesse provas anteriores do ENEM e simulados de cursos renomados</p>
-              <Button asChild variant="ghost" className="w-full text-primary">
-                <Link to="/simulados">Ver Simulados →</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-border bg-card hover:shadow-lg transition-shadow rounded-2xl">
-            <CardContent className="pt-6 pb-6 px-6">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <BookOpen className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="font-bold text-foreground">Matérias do ENEM</h3>
-              </div>
-              <p className="text-sm text-muted-foreground mb-3">Estude os conteúdos que mais caem organizados por área de conhecimento</p>
-              <Button asChild variant="ghost" className="w-full text-primary">
-                <Link to="/materias">Explorar Matérias →</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-border bg-card hover:shadow-lg transition-shadow rounded-2xl">
-            <CardContent className="pt-6 pb-6 px-6">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <PenTool className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="font-bold text-foreground">Dicas Estratégicas</h3>
-              </div>
-              <p className="text-sm text-muted-foreground mb-3">Aprenda técnicas e estratégias para maximizar sua nota no ENEM</p>
-              <Button asChild variant="ghost" className="w-full text-primary">
-                <Link to="/dicas">Ver Dicas →</Link>
-              </Button>
-            </CardContent>
-          </Card>
+      <section className="bg-primary px-4 py-14 text-primary-foreground sm:px-6">
+        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_0.8fr] lg:items-center">
+          <div>
+            <h2 className="text-3xl font-black sm:text-5xl">Entre hoje e comece pelo próximo passo certo.</h2>
+            <p className="mt-4 max-w-2xl text-primary-foreground/85">Crie sua conta, confirme o código no email e escolha o plano para liberar todas as ferramentas PRO.</p>
+          </div>
+          <div className="grid gap-3">
+            {[
+              "Código de verificação no cadastro",
+              "Checkout dentro do site",
+              "Liberação automática após aprovação",
+            ].map((item) => <div key={item} className="flex items-center gap-3 rounded-xl bg-primary-foreground/10 p-3"><CheckCircle2 className="h-5 w-5" /><span className="font-semibold">{item}</span></div>)}
+          </div>
         </div>
+      </section>
 
-        {/* CTA Section */}
-        <Card className="border border-primary/20 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-2xl max-w-3xl mx-auto">
-          <CardContent className="p-8 md:p-12 text-center">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-              Pronto para começar sua jornada rumo à aprovação?
-            </h2>
-            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Junte-se a milhares de estudantes que estão usando IA para estudar de forma mais inteligente
-            </p>
-            <Button asChild size="lg" className="text-base md:text-lg px-10 py-6 rounded-xl font-bold uppercase tracking-wide">
-              <Link to="/chat">
-                <Brain className="mr-2 h-5 w-5" />
-                Começar Agora Gratuitamente
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+      <section className="px-4 py-14 sm:px-6">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-8 text-center">
+            <HelpCircle className="mx-auto mb-3 h-10 w-10 text-primary" />
+            <h2 className="text-3xl font-black text-foreground sm:text-4xl">Perguntas frequentes</h2>
+          </div>
+          <Accordion type="single" collapsible className="rounded-2xl border border-border bg-card px-4">
+            {faqs.map((faq, index) => (
+              <AccordionItem key={faq.q} value={`faq-${index}`}>
+                <AccordionTrigger className="text-left font-bold">{faq.q}</AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">{faq.a}</AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </section>
+
+      <footer className="border-t border-border px-4 py-8 sm:px-6">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 font-black text-primary"><GraduationCap className="h-5 w-5" /> AprovI.A</div>
+          <div className="flex flex-wrap gap-3 text-sm text-muted-foreground"><Link to="/suporte">Suporte</Link><Link to="/precos">Planos</Link><Link to="/auth">Entrar</Link></div>
+        </div>
+      </footer>
+    </main>
   );
 }
