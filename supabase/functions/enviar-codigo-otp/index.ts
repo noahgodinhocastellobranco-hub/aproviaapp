@@ -56,7 +56,7 @@ serve(async (req) => {
       const { data: saved } = await admin.from("verification_codes").select("*").eq("user_id", userId).eq("type", type).eq("code", code).is("used_at", null).gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(1).maybeSingle();
       if (!saved) return json({ error: "Código inválido" }, 400);
       await admin.from("verification_codes").update({ used_at: new Date().toISOString() }).eq("id", saved.id);
-      if (type === "signup_verify") await admin.from("profiles").update({ email_verified: true }).eq("id", userId);
+      if (type === "signup_verify") await admin.from("profiles").upsert({ id: userId, email: recipient, email_verified: true }, { onConflict: "id" });
       if (type === "password") await admin.auth.admin.updateUserById(userId, { password: newValue });
       if (type === "email") {
         const newEmail = normalize(newValue);

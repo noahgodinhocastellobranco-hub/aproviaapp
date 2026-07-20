@@ -35,6 +35,9 @@ export default function Auth() {
 
   const redirectAfterLogin = async (userId: string, userEmail?: string | null) => {
     const { data: profile } = await supabase.from("profiles").select("is_premium,email_verified").eq("id", userId).maybeSingle();
+    if (!profile && userEmail) {
+      await supabase.from("profiles").upsert({ id: userId, email: userEmail, email_verified: false }, { onConflict: "id" });
+    }
     if (!profile?.email_verified) {
       if (userEmail) setEmail(userEmail);
       setVerifyPurpose("signup");
