@@ -33,21 +33,21 @@ export function InstallAppDialog({ trigger }: Props) {
           </TabsList>
 
           <TabsContent value="android" className="space-y-3 pt-4 text-sm">
-            <Step n={1} icon={<Smartphone className="h-4 w-4" />}>Abra o site <b>aproviaapp.lovable.app</b> no <b>Google Chrome</b> do seu Android.</Step>
+            <Step n={1} icon={<Smartphone className="h-4 w-4" />}>Abra o site <b>aprovia.online</b> no <b>Google Chrome</b> do seu Android.</Step>
             <Step n={2} icon={<MoreVertical className="h-4 w-4" />}>Toque no menu de <b>três pontinhos</b> no canto superior direito.</Step>
             <Step n={3} icon={<Download className="h-4 w-4" />}>Toque em <b>"Instalar aplicativo"</b> ou <b>"Adicionar à tela inicial"</b>.</Step>
             <Step n={4} icon={<Plus className="h-4 w-4" />}>Confirme em <b>Instalar</b> — o ícone do AprovI.A aparecerá na sua tela inicial.</Step>
           </TabsContent>
 
           <TabsContent value="ios" className="space-y-3 pt-4 text-sm">
-            <Step n={1} icon={<Apple className="h-4 w-4" />}>Abra o site <b>aproviaapp.lovable.app</b> no <b>Safari</b> do iPhone ou iPad.</Step>
+            <Step n={1} icon={<Apple className="h-4 w-4" />}>Abra o site <b>aprovia.online</b> no <b>Safari</b> do iPhone ou iPad.</Step>
             <Step n={2} icon={<Share className="h-4 w-4" />}>Toque no botão <b>Compartilhar</b> (ícone de quadrado com seta) na barra inferior.</Step>
             <Step n={3} icon={<Plus className="h-4 w-4" />}>Role e toque em <b>"Adicionar à Tela de Início"</b>.</Step>
             <Step n={4} icon={<Download className="h-4 w-4" />}>Confirme em <b>Adicionar</b> — o app ficará na sua tela como um aplicativo nativo.</Step>
           </TabsContent>
 
           <TabsContent value="pc" className="space-y-3 pt-4 text-sm">
-            <Step n={1} icon={<Monitor className="h-4 w-4" />}>Abra <b>aproviaapp.lovable.app</b> no <b>Chrome</b>, <b>Edge</b> ou <b>Brave</b>.</Step>
+            <Step n={1} icon={<Monitor className="h-4 w-4" />}>Abra <b>aprovia.online</b> no <b>Chrome</b>, <b>Edge</b> ou <b>Brave</b>.</Step>
             <Step n={2} icon={<Download className="h-4 w-4" />}>Na barra de endereços, clique no ícone de <b>instalar</b> (monitor com seta ↓) à direita.</Step>
             <Step n={3} icon={<Plus className="h-4 w-4" />}>Se não aparecer, abra o menu ⋮ e escolha <b>"Instalar AprovI.A..."</b>.</Step>
             <Step n={4} icon={<Monitor className="h-4 w-4" />}>Clique em <b>Instalar</b> — o AprovI.A abrirá em janela própria e ficará no menu iniciar.</Step>
