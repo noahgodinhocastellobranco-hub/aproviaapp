@@ -120,6 +120,9 @@ export default function Auth() {
       toast.success("Código enviado para seu email.");
       if (data?.fallbackCode) toast.info(`Código de teste: ${data.fallbackCode}`);
       setVerifyPurpose("reset");
+      setPassword("");
+      setConfirmPassword("");
+      setCode("");
       setMode("verify");
     }
   };
