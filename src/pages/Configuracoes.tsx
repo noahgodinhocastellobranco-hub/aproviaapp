@@ -151,10 +151,17 @@ export default function Configuracoes() {
             <CardHeader><CardTitle className="flex items-center gap-2"><User className="h-5 w-5 text-primary" /> Perfil</CardTitle></CardHeader>
             <CardContent className="space-y-5">
               <div className="flex items-center gap-4">
-                <div className="relative">
-                  <Avatar className="h-20 w-20"><AvatarFallback className="bg-primary text-2xl font-black text-primary-foreground">{(profile?.nome || profile?.email || "AP").slice(0, 2).toUpperCase()}</AvatarFallback></Avatar>
-                  <span className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-card shadow border border-border"><Camera className="h-4 w-4 text-primary" /></span>
-                </div>
+                <label className="relative cursor-pointer group" title="Trocar foto">
+                  <Avatar className="h-20 w-20 ring-2 ring-primary/20 group-hover:ring-primary transition">
+                    {profile?.avatar_url && <AvatarImage src={profile.avatar_url} alt="Foto de perfil" />}
+                    <AvatarFallback className="bg-primary text-2xl font-black text-primary-foreground">{(profile?.nome || profile?.email || "AP").slice(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <span className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow border border-border">
+                    <Camera className="h-4 w-4" />
+                  </span>
+                  <input type="file" accept="image/*" className="hidden" disabled={uploadingAvatar}
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAvatar(f); e.target.value = ""; }} />
+                </label>
                 <div>
                   <p className="font-bold text-foreground">{profile?.nome || "Estudante"}</p>
                   <p className="text-sm text-muted-foreground">{profile?.email}</p>
