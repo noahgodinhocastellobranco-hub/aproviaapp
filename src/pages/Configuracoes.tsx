@@ -18,6 +18,7 @@ type Profile = {
   is_premium: boolean;
   email_verified: boolean;
   created_at: string | null;
+  avatar_url?: string | null;
 };
 
 type ChangeType = "password" | "email";
