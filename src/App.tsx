@@ -5,6 +5,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
+import Precos from "./pages/Precos";
+import Admin from "./pages/Admin";
+import Configuracoes from "./pages/Configuracoes";
+import Vendas from "./pages/Vendas";
+import Suporte from "./pages/Suporte";
 import Install from "./pages/Install";
 import Dicas from "./pages/Dicas";
 import Simulados from "./pages/Simulados";
@@ -31,9 +37,19 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Index />} />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/precos" element={<Precos />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/configuracoes" element={<Configuracoes />} />
+          <Route path="/vendas" element={<Vendas />} />
+          <Route path="/suporte" element={<Suporte />} />
+
+          <Route path="/*" element={
+            <Layout>
+              <Routes>
             <Route path="/install" element={<Install />} />
             <Route path="/dicas" element={<Dicas />} />
             <Route path="/simulados" element={<Simulados />} />
@@ -49,11 +65,12 @@ const App = () => (
             <Route path="/consultar-curso" element={<ConsultarCurso />} />
             <Route path="/pomodoro" element={<Pomodoro />} />
             <Route path="/rotina" element={<Rotina />} />
-            <Route path="/auth" element={<Auth />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
+              </Routes>
+            </Layout>
+          } />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
