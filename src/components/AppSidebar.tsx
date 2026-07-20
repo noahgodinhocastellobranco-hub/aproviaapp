@@ -128,7 +128,7 @@ export function AppSidebar() {
           </SidebarMenuItem>
           <SidebarMenuItem>
             <NavLink
-              to="/"
+              to="/dashboard"
               className="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-primary/10 transition-all duration-200 no-underline text-primary"
             >
               <ExternalLink className="h-4 w-4 flex-shrink-0" />
