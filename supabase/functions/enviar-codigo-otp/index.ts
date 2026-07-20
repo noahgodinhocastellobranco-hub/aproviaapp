@@ -21,7 +21,12 @@ const normalize = (email?: string | null) => email?.trim().toLowerCase() || null
 
 function emailHtml(code: string, type: string) {
   const title = type === "signup_verify" ? "Confirme sua conta" : type === "email" ? "Alteração de email" : "Alteração de senha";
-  return `<!doctype html><html><body style="margin:0;background:#ffffff;font-family:Arial,sans-serif;color:#172033"><div style="max-width:560px;margin:0 auto;padding:32px 18px"><div style="background:#0B61FF;border-radius:20px 20px 0 0;padding:28px;text-align:center;color:#fff"><div style="font-size:34px;font-weight:900">🧠 AprovI.A</div><p style="margin:8px 0 0;opacity:.9">Sua IA para passar no ENEM</p></div><div style="border:1px solid #e5e7eb;border-top:0;border-radius:0 0 20px 20px;padding:30px"><h1 style="margin:0 0 12px;font-size:26px;color:#0B61FF">${title}</h1><p style="font-size:16px;line-height:1.6;color:#475569">Use o código abaixo no site para continuar com segurança. Ele expira em 10 minutos.</p><div style="letter-spacing:12px;text-align:center;font-size:42px;font-weight:900;color:#0B61FF;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:16px;padding:22px;margin:28px 0">${code}</div><p style="font-size:14px;line-height:1.6;color:#64748b">Se você não pediu este código, pode ignorar este email.</p></div></div></body></html>`;
+  return `<!doctype html><html><body style="margin:0;background:#ffffff;font-family:Arial,sans-serif;color:#172033"><div style="max-width:560px;margin:0 auto;padding:32px 18px"><div style="background:#0B61FF;border-radius:20px 20px 0 0;padding:28px;text-align:center;color:#fff"><div style="font-size:34px;font-weight:900">AprovI.A</div><p style="margin:8px 0 0;opacity:.9">Sua IA para passar no ENEM</p></div><div style="border:1px solid #e5e7eb;border-top:0;border-radius:0 0 20px 20px;padding:30px"><h1 style="margin:0 0 12px;font-size:26px;color:#0B61FF">${title}</h1><p style="font-size:16px;line-height:1.6;color:#475569">Use o código abaixo no site para continuar com segurança. Ele expira em 10 minutos.</p><div style="letter-spacing:12px;text-align:center;font-size:42px;font-weight:900;color:#0B61FF;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:16px;padding:22px;margin:28px 0">${code}</div><p style="font-size:14px;line-height:1.6;color:#64748b">Se você não pediu este código, pode ignorar este email.</p><p style="font-size:12px;color:#94a3b8;margin-top:20px">AprovI.A • suporteaprovia@gmail.com</p></div></div></body></html>`;
+}
+
+function emailText(code: string, type: string) {
+  const title = type === "signup_verify" ? "Confirme sua conta" : type === "email" ? "Alteração de email" : "Alteração de senha";
+  return `AprovI.A - ${title}\n\nSeu código de verificação: ${code}\n\nEle expira em 10 minutos.\n\nSe você não pediu este código, pode ignorar este email.\n\nSuporte: suporteaprovia@gmail.com`;
 }
 
 serve(async (req) => {
@@ -69,13 +74,48 @@ serve(async (req) => {
 
     const generated = code4();
     await admin.from("verification_codes").insert({ user_id: userId, code: generated, type, new_value: newValue || null, expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() });
-    let fallbackCode: string | undefined;
+
+    let sent = false;
+    let sendError: string | undefined;
+    let messageId: string | undefined;
+
     if (resendKey) {
-      const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from: "AprovI.A <noreply@aprovia.online>", to: [recipient], subject: `Seu código AprovI.A: ${generated}`, html: emailHtml(generated, type) }) });
-      if (!response.ok) fallbackCode = generated;
-    } else fallbackCode = generated;
-    return json({ ok: true, fallbackCode });
+      try {
+        const response = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: "AprovI.A <noreply@aprovia.online>",
+            to: [recipient],
+            reply_to: "suporteaprovia@gmail.com",
+            subject: `Seu código AprovI.A: ${generated}`,
+            html: emailHtml(generated, type),
+            text: emailText(generated, type),
+            headers: { "X-Entity-Ref-ID": `otp-${userId}-${Date.now()}` },
+          }),
+        });
+        const respText = await response.text();
+        if (response.ok) {
+          sent = true;
+          try { messageId = JSON.parse(respText)?.id; } catch { /* ignore */ }
+          console.log("OTP email sent", { userId, type, to: recipient, messageId });
+        } else {
+          sendError = `Resend ${response.status}: ${respText}`;
+          console.error("OTP email failed", sendError);
+        }
+      } catch (e) {
+        sendError = e instanceof Error ? e.message : String(e);
+        console.error("OTP email exception", sendError);
+      }
+    } else {
+      sendError = "RESEND_API_KEY não configurada";
+      console.error(sendError);
+    }
+
+    // Se falhou o envio, expor o código no retorno como fallback para o usuário não travar.
+    return json({ ok: true, sent, messageId, fallbackCode: sent ? undefined : generated, sendError });
   } catch (error) {
+    console.error("OTP handler crash", error);
     return json({ error: error instanceof Error ? error.message : "Erro inesperado" }, 500);
   }
 });
