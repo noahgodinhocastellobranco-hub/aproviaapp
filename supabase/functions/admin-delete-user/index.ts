@@ -25,7 +25,7 @@ serve(async (req) => {
     const targetEmail = (profile?.email || parsed.data.email || "").toLowerCase();
     if (targetEmail === OWNER_EMAIL) return json({ error: "Conta protegida" }, 403);
     await admin.from("profiles").delete().eq("id", parsed.data.userId);
-    await admin.auth.admin.deleteUser(parsed.data.userId, true);
+    await admin.auth.admin.deleteUser(parsed.data.userId, false);
     return json({ ok: true });
   } catch (error) { return json({ error: error instanceof Error ? error.message : "Erro inesperado" }, 500); }
 });

@@ -33,9 +33,10 @@ export default function Auth() {
     return "Entre para continuar seus estudos no AprovI.A.";
   }, [mode]);
 
-  const redirectAfterLogin = async (userId: string) => {
+  const redirectAfterLogin = async (userId: string, userEmail?: string | null) => {
     const { data: profile } = await supabase.from("profiles").select("is_premium,email_verified").eq("id", userId).maybeSingle();
     if (!profile?.email_verified) {
+      if (userEmail) setEmail(userEmail);
       setVerifyPurpose("signup");
       setMode("verify");
       await sendSignupCode(false);
@@ -47,13 +48,13 @@ export default function Auth() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user && mode !== "verify") redirectAfterLogin(session.user.id);
+      if (session?.user && mode !== "verify") redirectAfterLogin(session.user.id, session.user.email);
     });
   }, []);
 
   const sendSignupCode = async (showToast = true) => {
     const { data, error } = await supabase.functions.invoke("enviar-codigo-otp", {
-      body: { type: "signup_verify", email },
+      body: { type: "signup_verify", ...(email ? { email } : {}) },
     });
     if (error) {
       if (showToast) toast.error("Não foi possível enviar o código.");
@@ -73,7 +74,7 @@ export default function Auth() {
       toast.error(error.message.includes("Invalid") ? "Email ou senha incorretos." : error.message);
       return;
     }
-    if (data.user) redirectAfterLogin(data.user.id);
+    if (data.user) redirectAfterLogin(data.user.id, data.user.email);
   };
 
   const handleSignup = async (e: React.FormEvent) => {
