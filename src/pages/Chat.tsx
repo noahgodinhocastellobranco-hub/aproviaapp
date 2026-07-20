@@ -18,6 +18,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { supabase } from "@/integrations/supabase/client";
 import FormattedText from "@/components/FormattedText";
 import { cn } from "@/lib/utils";
 
@@ -91,10 +92,21 @@ export default function Chat() {
   const [input, setInput] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [userName, setUserName] = useState<string>("");
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-aprovia`;
+
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("profiles").select("nome, email").eq("id", user.id).maybeSingle();
+      const nome = (data?.nome || data?.email || user.email || "").trim();
+      setUserName(nome.split(" ")[0] || nome.split("@")[0] || "");
+    })();
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -206,19 +218,31 @@ export default function Chat() {
     <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-background via-background to-primary/5">
       <div className="container mx-auto px-4 py-6 max-w-5xl flex flex-col h-[calc(100vh-4rem)]">
         {/* Header */}
-        <div className="mb-4 flex items-center gap-3">
-          <div className="relative">
-            <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full" />
-            <div className="relative h-12 w-12 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg">
-              <Sparkles className="h-6 w-6 text-white" />
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full" />
+              <div className="relative h-12 w-12 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg">
+                <Sparkles className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+                AprovI.A
+              </h1>
+              <p className="text-sm text-muted-foreground">Sua tutora inteligente para o ENEM • responde textos e fotos</p>
             </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-              AprovI.A
-            </h1>
-            <p className="text-sm text-muted-foreground">Sua tutora inteligente para o ENEM • responde textos e fotos</p>
-          </div>
+          {userName && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-card border border-border/60 shadow-sm">
+              <Avatar className="h-9 w-9">
+                <AvatarFallback className="bg-gradient-to-br from-primary to-blue-600 text-white text-sm font-bold">
+                  {userName.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-semibold hidden sm:inline">{userName}</span>
+            </div>
+          )}
         </div>
 
         {/* Content */}
