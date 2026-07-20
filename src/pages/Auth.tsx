@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -65,7 +65,7 @@ export default function Auth() {
     return true;
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -77,7 +77,7 @@ export default function Auth() {
     if (data.user) redirectAfterLogin(data.user.id, data.user.email);
   };
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleSignup = async (e: FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       toast.error("As senhas não conferem.");
@@ -111,7 +111,7 @@ export default function Auth() {
     navigate("/precos?checkout=1", { replace: true });
   };
 
-  const sendResetCode = async (e: React.FormEvent) => {
+  const sendResetCode = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const { data, error } = await supabase.functions.invoke("resetar-senha", { body: { email } });
