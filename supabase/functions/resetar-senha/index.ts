@@ -7,7 +7,8 @@ const BodySchema = z.object({ action: z.enum(["send", "verify"]).optional().defa
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 const code4 = () => String(Math.floor(1000 + Math.random() * 9000));
 
-const html = (code: string) => `<!doctype html><html><body style="margin:0;background:#ffffff;font-family:Arial,sans-serif;color:#172033"><div style="max-width:560px;margin:0 auto;padding:32px 18px"><div style="background:#0B61FF;border-radius:20px 20px 0 0;padding:28px;text-align:center;color:#fff"><div style="font-size:34px;font-weight:900">🧠 AprovI.A</div><p style="margin:8px 0 0;opacity:.9">Redefinição segura de senha</p></div><div style="border:1px solid #e5e7eb;border-top:0;border-radius:0 0 20px 20px;padding:30px"><h1 style="margin:0 0 12px;font-size:26px;color:#0B61FF">Troque sua senha no site</h1><p style="font-size:16px;line-height:1.6;color:#475569">Digite este código na página de login e escolha sua nova senha. O código expira em 10 minutos.</p><div style="letter-spacing:12px;text-align:center;font-size:42px;font-weight:900;color:#0B61FF;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:16px;padding:22px;margin:28px 0">${code}</div><p style="font-size:14px;color:#64748b">Se não foi você, ignore este email.</p></div></div></body></html>`;
+const html = (code: string) => `<!doctype html><html><body style="margin:0;background:#ffffff;font-family:Arial,sans-serif;color:#172033"><div style="max-width:560px;margin:0 auto;padding:32px 18px"><div style="background:#0B61FF;border-radius:20px 20px 0 0;padding:28px;text-align:center;color:#fff"><div style="font-size:34px;font-weight:900">AprovI.A</div><p style="margin:8px 0 0;opacity:.9">Redefinição segura de senha</p></div><div style="border:1px solid #e5e7eb;border-top:0;border-radius:0 0 20px 20px;padding:30px"><h1 style="margin:0 0 12px;font-size:26px;color:#0B61FF">Troque sua senha no site</h1><p style="font-size:16px;line-height:1.6;color:#475569">Digite este código na página de login e escolha sua nova senha. O código expira em 10 minutos.</p><div style="letter-spacing:12px;text-align:center;font-size:42px;font-weight:900;color:#0B61FF;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:16px;padding:22px;margin:28px 0">${code}</div><p style="font-size:14px;color:#64748b">Se não foi você, ignore este email.</p><p style="font-size:12px;color:#94a3b8;margin-top:20px">AprovI.A • suporteaprovia@gmail.com</p></div></div></body></html>`;
+const textBody = (code: string) => `AprovI.A - Troque sua senha\n\nSeu código: ${code}\n\nExpira em 10 minutos.\n\nSe não foi você, ignore este email.\n\nSuporte: suporteaprovia@gmail.com`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -32,11 +33,46 @@ serve(async (req) => {
     }
     const generated = code4();
     await admin.from("verification_codes").insert({ user_id: profile.id, code: generated, type: "password_reset", expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() });
-    let fallbackCode: string | undefined;
+
+    let sent = false;
+    let sendError: string | undefined;
+    let messageId: string | undefined;
+
     if (resendKey) {
-      const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from: "AprovI.A <noreply@aprovia.online>", to: [email], subject: `Código para trocar sua senha: ${generated}`, html: html(generated) }) });
-      if (!response.ok) fallbackCode = generated;
-    } else fallbackCode = generated;
-    return json({ ok: true, fallbackCode });
-  } catch (error) { return json({ error: error instanceof Error ? error.message : "Erro inesperado" }, 500); }
+      try {
+        const response = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: "AprovI.A <noreply@aprovia.online>",
+            to: [email],
+            reply_to: "suporteaprovia@gmail.com",
+            subject: `Código para trocar sua senha: ${generated}`,
+            html: html(generated),
+            text: textBody(generated),
+            headers: { "X-Entity-Ref-ID": `reset-${profile.id}-${Date.now()}` },
+          }),
+        });
+        const respText = await response.text();
+        if (response.ok) {
+          sent = true;
+          try { messageId = JSON.parse(respText)?.id; } catch { /* ignore */ }
+          console.log("Reset email sent", { to: email, messageId });
+        } else {
+          sendError = `Resend ${response.status}: ${respText}`;
+          console.error("Reset email failed", sendError);
+        }
+      } catch (e) {
+        sendError = e instanceof Error ? e.message : String(e);
+        console.error("Reset email exception", sendError);
+      }
+    } else {
+      sendError = "RESEND_API_KEY não configurada";
+    }
+
+    return json({ ok: true, sent, messageId, fallbackCode: sent ? undefined : generated, sendError });
+  } catch (error) {
+    console.error("Reset handler crash", error);
+    return json({ error: error instanceof Error ? error.message : "Erro inesperado" }, 500);
+  }
 });
