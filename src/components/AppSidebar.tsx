@@ -1,8 +1,11 @@
 import { Home, FileText, BookOpen, PenTool, MessageCircle, Lightbulb, ExternalLink, Timer, HelpCircle, ClipboardList, FolderDown, GraduationCap, Trophy, Search, Brain, Calendar } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { PWAStatusBar } from "./PWAStatusBar";
 import { ThemeToggle } from "./ThemeToggle";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Sidebar,
   SidebarContent,
@@ -63,6 +66,25 @@ function NavItem({ item }: { item: { title: string; url: string; icon: React.Com
 export function AppSidebar() {
   const { open } = useSidebar();
   const isMobile = useIsMobile();
+  const [firstName, setFirstName] = useState<string>("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [initials, setInitials] = useState<string>("AP");
+
+  useEffect(() => {
+    const load = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setFirstName(""); setAvatarUrl(null); return; }
+      const { data } = await supabase.from("profiles").select("nome, email, avatar_url").eq("id", user.id).maybeSingle();
+      const nome = (data?.nome || data?.email || user.email || "").trim();
+      const first = nome.split(" ")[0] || nome.split("@")[0] || "";
+      setFirstName(first);
+      setInitials((first || nome).slice(0, 2).toUpperCase() || "AP");
+      setAvatarUrl((data as any)?.avatar_url || null);
+    };
+    load();
+    const { data: sub } = supabase.auth.onAuthStateChange(() => load());
+    return () => { sub.subscription.unsubscribe(); };
+  }, []);
 
   return (
     <Sidebar
@@ -70,20 +92,21 @@ export function AppSidebar() {
       className="border-r border-border bg-card"
     >
       <SidebarHeader className="p-4 pb-3 bg-card">
-        <div className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5">
-          <div className="flex items-center justify-center w-11 h-11 rounded-xl shadow-sm bg-primary">
-            <Brain className="h-6 w-6 text-primary-foreground" />
-          </div>
+        <NavLink to="/configuracoes" className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5 hover:bg-primary/10 transition no-underline">
+          <Avatar className="w-11 h-11 ring-2 ring-primary/20">
+            {avatarUrl && <AvatarImage src={avatarUrl} alt={firstName} />}
+            <AvatarFallback className="bg-primary text-primary-foreground font-bold">{initials}</AvatarFallback>
+          </Avatar>
           <div className="flex-1 min-w-0">
-            <h2 className="text-base font-bold leading-tight text-primary">
-              AprovI.A
+            <h2 className="text-base font-bold leading-tight text-primary truncate">
+              {firstName || "AprovI.A"}
             </h2>
             <p className="text-[11px] leading-tight text-primary/60">Assistente ENEM</p>
           </div>
           {isMobile && (
             <SidebarTrigger className="flex-shrink-0 h-8 w-8 rounded-lg text-primary" />
           )}
-        </div>
+        </NavLink>
       </SidebarHeader>
 
       <SidebarContent className="px-3 py-1 bg-card">
