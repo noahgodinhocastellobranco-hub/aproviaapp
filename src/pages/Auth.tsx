@@ -39,7 +39,7 @@ export default function Auth() {
       if (userEmail) setEmail(userEmail);
       setVerifyPurpose("signup");
       setMode("verify");
-      await sendSignupCode(false);
+      await sendSignupCode(false, userEmail || email);
       return;
     }
     if (next !== "/") navigate(next, { replace: true });
@@ -52,9 +52,9 @@ export default function Auth() {
     });
   }, []);
 
-  const sendSignupCode = async (showToast = true) => {
+  const sendSignupCode = async (showToast = true, targetEmail = email) => {
     const { data, error } = await supabase.functions.invoke("enviar-codigo-otp", {
-      body: { type: "signup_verify", ...(email ? { email } : {}) },
+      body: { type: "signup_verify", ...(targetEmail ? { email: targetEmail } : {}) },
     });
     if (error) {
       if (showToast) toast.error("Não foi possível enviar o código.");
