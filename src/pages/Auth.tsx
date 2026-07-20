@@ -16,6 +16,7 @@ export default function Auth() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [mode, setMode] = useState<Mode>((location.state as { requireOtp?: boolean })?.requireOtp ? "verify" : "login");
+  const [verifyPurpose, setVerifyPurpose] = useState<"signup" | "reset">("signup");
   const [email, setEmail] = useState((location.state as { email?: string })?.email || "");
   const [nome, setNome] = useState("");
   const [password, setPassword] = useState("");
@@ -35,6 +36,7 @@ export default function Auth() {
   const redirectAfterLogin = async (userId: string) => {
     const { data: profile } = await supabase.from("profiles").select("is_premium,email_verified").eq("id", userId).maybeSingle();
     if (!profile?.email_verified) {
+      setVerifyPurpose("signup");
       setMode("verify");
       await sendSignupCode(false);
       return;
@@ -90,6 +92,7 @@ export default function Auth() {
     if (data.user) {
       await supabase.from("profiles").upsert({ id: data.user.id, email, nome, email_verified: false }, { onConflict: "id" });
       await sendSignupCode();
+      setVerifyPurpose("signup");
       setMode("verify");
     }
   };
@@ -116,6 +119,7 @@ export default function Auth() {
     else {
       toast.success("Código enviado para seu email.");
       if (data?.fallbackCode) toast.info(`Código de teste: ${data.fallbackCode}`);
+      setVerifyPurpose("reset");
       setMode("verify");
     }
   };
@@ -141,8 +145,6 @@ export default function Auth() {
   const handleGoogle = async () => {
     await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } });
   };
-
-  const isResetVerify = mode === "verify" && !email.includes("@") === false && password.length > 0;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-success/10 px-4 py-6">
@@ -197,16 +199,16 @@ export default function Auth() {
                     </InputOTPGroup>
                   </InputOTP>
                 </div>
-                {mode === "verify" && password && (
+                {verifyPurpose === "reset" && (
                   <div className="space-y-3">
                     <Input type="password" placeholder="Nova senha" value={password} onChange={(e) => setPassword(e.target.value)} />
                     <Input type="password" placeholder="Confirmar nova senha" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
                   </div>
                 )}
-                <Button className="w-full font-bold" disabled={loading || code.length !== 4} onClick={password && mode === "verify" ? verifyResetPassword : verifySignupCode}>
+                <Button className="w-full font-bold" disabled={loading || code.length !== 4} onClick={verifyPurpose === "reset" ? verifyResetPassword : verifySignupCode}>
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirmar código"}
                 </Button>
-                <Button variant="ghost" className="w-full" onClick={() => sendSignupCode()}>Reenviar código</Button>
+                <Button variant="ghost" className="w-full" onClick={() => verifyPurpose === "reset" ? supabase.functions.invoke("resetar-senha", { body: { email } }).then(() => toast.success("Código reenviado.")) : sendSignupCode()}>Reenviar código</Button>
               </div>
             )}
 
@@ -215,7 +217,7 @@ export default function Auth() {
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
               {mode === "signup" ? "Já tem conta?" : "Ainda não tem conta?"}{" "}
-              <button className="font-bold text-primary hover:underline" onClick={() => { setMode(mode === "signup" ? "login" : "signup"); setPassword(""); setConfirmPassword(""); setCode(""); }}>
+              <button className="font-bold text-primary hover:underline" onClick={() => { setVerifyPurpose("signup"); setMode(mode === "signup" ? "login" : "signup"); setPassword(""); setConfirmPassword(""); setCode(""); }}>
                 {mode === "signup" ? "Entrar" : "Criar conta gratuitamente"}
               </button>
             </p>
