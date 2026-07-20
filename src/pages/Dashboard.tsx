@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { InstallAppDialog } from "@/components/InstallAppDialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import {
@@ -23,6 +24,7 @@ import {
   Target,
   Timer,
   Trophy,
+  Download,
 } from "lucide-react";
 
 const SUBJECTS = [
@@ -144,6 +146,11 @@ export default function Dashboard() {
               <Flame className="h-4 w-4 text-warning" /> 7 dias
             </div>
             <ThemeToggle />
+            <InstallAppDialog trigger={
+              <Button variant="outline" size="icon" aria-label="Baixar App">
+                <Download className="h-4 w-4" />
+              </Button>
+            } />
             <Button variant="outline" size="icon" onClick={() => navigate("/configuracoes")} aria-label="Configurações">
               <Settings className="h-4 w-4" />
             </Button>
