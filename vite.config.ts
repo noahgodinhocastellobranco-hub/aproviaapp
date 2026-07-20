@@ -11,86 +11,94 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
-    react(), 
+    react(),
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon-512.png', 'icon-192.png'],
+      // The guarded wrapper in src/pwa/register.ts is the ONLY registrar.
+      injectRegister: null,
+      includeAssets: ['icon-512.png', 'icon-192.png', 'apple-splash.png', 'favicon.png'],
       manifest: {
         name: 'AprovI.A',
         short_name: 'AprovI.A',
-        description: 'Estude para o ENEM com dicas, simulados, matérias e correção de redação por IA.',
-        theme_color: '#1E88E5',
-        background_color: '#F0F4F8',
+        description: 'A plataforma inteligente para estudar para o ENEM utilizando Inteligência Artificial.',
+        theme_color: '#2563EB',
+        background_color: '#FFFFFF',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
+        lang: 'pt-BR',
+        categories: ['education', 'productivity'],
         icons: [
-          {
-            src: '/icon-192.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any maskable'
-          },
-          {
-            src: '/icon-512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable'
-          }
-        ]
+          { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
+        // Never intercept OAuth callback / API routes as navigations.
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
         runtimeCaching: [
+          // HTML page navigations — NetworkFirst so users get fresh content when online.
+          {
+            urlPattern: ({ request, url }) =>
+              request.mode === 'navigate' && !url.pathname.startsWith('/~oauth'),
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'pages-cache',
+              networkTimeoutSeconds: 5,
+              expiration: { maxEntries: 40, maxAgeSeconds: 24 * 60 * 60 },
+            },
+          },
+          // Google Fonts.
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'google-fonts-stylesheets' },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'google-fonts-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
+              cacheName: 'google-fonts-webfonts',
+              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
           },
+          // Supabase / API — dynamic content, NetworkFirst with short cache fallback.
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 5 * 60 // 5 minutes
-              },
-              networkTimeoutSeconds: 10
-            }
+              networkTimeoutSeconds: 10,
+              expiration: { maxEntries: 50, maxAgeSeconds: 5 * 60 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
           },
+          // Images.
           {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif|ico)$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'images-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 30 * 24 * 60 * 60 // 30 days
-              }
-            }
-          }
-        ]
+              expiration: { maxEntries: 120, maxAgeSeconds: 30 * 24 * 60 * 60 },
+            },
+          },
+        ],
       },
       devOptions: {
-        enabled: true,
-        type: 'module'
-      }
-    })
+        // Never emit an SW in dev / Lovable preview.
+        enabled: false,
+        type: 'module',
+      },
+    }),
   ].filter(Boolean),
   resolve: {
     alias: {
