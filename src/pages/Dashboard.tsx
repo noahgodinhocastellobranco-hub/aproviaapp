@@ -104,7 +104,7 @@ export default function Dashboard() {
       setProfile(data);
       setLoading(false);
 
-      await supabase.rpc("increment_user_activity", { p_user_id: user.id }).catch(() => null);
+      await supabase.rpc("increment_user_activity", { p_user_id: user.id });
       const { data: recent } = await supabase
         .from("user_activity")
         .select("actions_count")
