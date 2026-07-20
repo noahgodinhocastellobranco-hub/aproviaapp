@@ -241,7 +241,13 @@ export default function Chat() {
                     {QUICK_ACTIONS.map((a) => (
                       <button
                         key={a.label}
-                        onClick={() => send(a.prompt)}
+                        onClick={() => {
+                          setInput(a.prompt);
+                          setTimeout(() => {
+                            const ta = document.querySelector<HTMLTextAreaElement>("textarea");
+                            ta?.focus();
+                          }, 50);
+                        }}
                         className="group relative p-4 rounded-2xl border border-border/60 bg-card hover:border-primary/50 transition-all hover:-translate-y-0.5 hover:shadow-lg text-left"
                       >
                         <div className={cn("h-10 w-10 rounded-xl bg-gradient-to-br flex items-center justify-center mb-3 shadow-sm", a.color)}>
