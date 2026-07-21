@@ -30,7 +30,7 @@ export default function Precos() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<PlanKey>("enem");
+  const [selectedPlan, setSelectedPlan] = useState<PlanKey>("mensal");
   const [checkingPayment, setCheckingPayment] = useState(false);
 
   useEffect(() => {
