@@ -113,9 +113,9 @@ export default function Precos() {
           </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
+        <div className="mx-auto grid max-w-md gap-6">
           {/* Plano Mensal */}
-          <Card className="relative flex flex-col border-border shadow-lg transition hover:-translate-y-1 hover:shadow-xl">
+          <Card className="relative flex flex-col border-2 border-primary shadow-2xl transition hover:-translate-y-1 hover:shadow-primary/30">
             <CardContent className="flex flex-1 flex-col p-6 sm:p-8">
               <div className="mb-6">
                 <h2 className="text-2xl font-black text-foreground">Plano Mensal</h2>
@@ -132,7 +132,7 @@ export default function Precos() {
               </div>
 
               <ul className="mb-6 space-y-2">
-                {benefits.slice(0, 5).map((b) => (
+                {benefits.map((b) => (
                   <li key={b} className="flex items-start gap-2 text-sm text-foreground">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-success" />
                     <span>{b}</span>
@@ -141,7 +141,8 @@ export default function Precos() {
               </ul>
 
               <div className="mt-auto">
-                <Button size="lg" variant="outline" className="w-full text-base font-bold" onClick={() => handleComprar("mensal")}>
+                <Button size="lg" className="w-full text-base font-bold" onClick={() => handleComprar("mensal")}>
+                  <Sparkles className="mr-2 h-5 w-5" />
                   {isPremium ? "Acessar Meu Plano PRO" : isLoggedIn ? "Assinar Mensal" : "Fazer Login"}
                 </Button>
                 <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
@@ -150,72 +151,6 @@ export default function Precos() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Plano ENEM - MELHOR OPÇÃO */}
-          <div className="relative">
-            {/* Animated glow */}
-            <div className="pointer-events-none absolute -inset-1 animate-pulse rounded-2xl bg-gradient-to-r from-primary via-primary/60 to-primary opacity-70 blur-lg" />
-            <Card className="relative flex h-full flex-col overflow-hidden border-2 border-primary shadow-2xl transition duration-300 hover:-translate-y-2 hover:shadow-primary/30">
-              {/* Top ribbon */}
-              <div className="relative overflow-hidden bg-primary py-2 text-center">
-                <div className="absolute inset-0 animate-[shimmer_3s_linear_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" style={{ backgroundSize: "200% 100%" }} />
-                <div className="relative flex items-center justify-center gap-2 text-sm font-black uppercase tracking-wider text-primary-foreground">
-                  <Crown className="h-4 w-4 animate-bounce" />
-                  Melhor Opção
-                  <Crown className="h-4 w-4 animate-bounce" />
-                </div>
-              </div>
-
-              <CardContent className="flex flex-1 flex-col p-6 sm:p-8">
-                <div className="mb-6 flex items-start justify-between gap-3">
-                  <div>
-                    <h2 className="flex items-center gap-2 text-2xl font-black text-foreground">
-                      Até o ENEM
-                      <Zap className="h-6 w-6 animate-pulse text-primary" />
-                    </h2>
-                    <p className="mt-1 text-sm text-muted-foreground">Pagamento único • Sem renovação</p>
-                  </div>
-                  <Badge className="animate-pulse bg-success text-success-foreground">ECONOMIZE</Badge>
-                </div>
-
-                <div className="mb-6 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/10 to-primary/5 p-5 text-center ring-1 ring-primary/20">
-                  <p className="text-sm text-muted-foreground line-through">R$ 274,00 (11x mensal)</p>
-                  <div className="mt-1 flex items-end justify-center gap-1">
-                    <span className="text-2xl font-bold text-foreground">R$</span>
-                    <span className="text-6xl font-black text-primary drop-shadow-sm">69,90</span>
-                  </div>
-                  <p className="mt-1 text-sm font-bold text-primary">pagamento único até o ENEM</p>
-                  <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-success/15 px-3 py-1 text-xs font-bold text-success">
-                    <Sparkles className="h-3 w-3" /> Mais de 74% de desconto
-                  </div>
-                </div>
-
-                <ul className="mb-6 space-y-2">
-                  {benefits.map((b) => (
-                    <li key={b} className="flex items-start gap-2 text-sm text-foreground">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-success" />
-                      <span>{b}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-auto">
-                  <Button
-                    size="lg"
-                    className="group relative w-full overflow-hidden text-base font-black shadow-lg shadow-primary/30 transition hover:shadow-xl hover:shadow-primary/50"
-                    onClick={() => handleComprar("enem")}
-                  >
-                    <span className="absolute inset-0 -translate-x-full animate-[shimmer_2s_linear_infinite] bg-gradient-to-r from-transparent via-white/25 to-transparent" style={{ backgroundSize: "200% 100%" }} />
-                    <Sparkles className="mr-2 h-5 w-5" />
-                    {isPremium ? "Acessar Meu Plano PRO" : isLoggedIn ? "Garantir Acesso até o ENEM" : "Fazer Login para Comprar"}
-                  </Button>
-                  <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                    <Shield className="h-3.5 w-3.5 text-success" /> Garantia de 7 dias • Acesso imediato
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </section>
 
