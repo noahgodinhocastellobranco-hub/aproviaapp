@@ -9,7 +9,6 @@ import { toast } from "sonner";
 
 const CAKTO_URLS = {
   mensal: "https://pay.cakto.com.br/3c7yw4k_710255",
-  enem: "https://pay.cakto.com.br/sz3qnac_991291",
 };
 
 type PlanKey = keyof typeof CAKTO_URLS;
