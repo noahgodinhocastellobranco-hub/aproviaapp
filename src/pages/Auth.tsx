@@ -151,7 +151,10 @@ export default function Auth() {
   };
 
   const handleGoogle = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+      extraParams: { prompt: "select_account" },
+    });
     if (result.error) {
       toast.error("Não foi possível entrar com Google. Tente novamente.");
       return;
