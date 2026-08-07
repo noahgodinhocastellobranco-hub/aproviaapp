@@ -32,6 +32,8 @@ export default function Precos() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanKey>("mensal");
   const [checkingPayment, setCheckingPayment] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
     const load = async () => {
