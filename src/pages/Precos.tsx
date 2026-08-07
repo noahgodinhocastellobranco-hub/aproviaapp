@@ -32,6 +32,8 @@ export default function Precos() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanKey>("mensal");
   const [checkingPayment, setCheckingPayment] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -39,12 +41,15 @@ export default function Precos() {
       setIsLoggedIn(!!user);
       if (!user) return;
 
+      setUserEmail(user.email || "");
+
       const { data: profile } = await supabase
         .from("profiles")
-        .select("is_premium")
+        .select("is_premium,nome")
         .eq("id", user.id)
         .maybeSingle();
 
+      setUserName(profile?.nome || "");
       if (profile?.is_premium) {
         setIsPremium(true);
         if (!checkoutOpen && searchParams.get("checkout") !== "1") navigate("/dashboard", { replace: true });
@@ -86,6 +91,13 @@ export default function Precos() {
     setSelectedPlan(plan);
     setCheckoutOpen(true);
   };
+
+  const checkoutUrl = (() => {
+    const url = new URL(CAKTO_URLS[selectedPlan]);
+    if (userEmail) url.searchParams.set("email", userEmail);
+    if (userName) url.searchParams.set("name", userName);
+    return url.toString();
+  })();
 
   return (
     <main className="min-h-screen bg-background px-4 py-6">
@@ -161,13 +173,15 @@ export default function Precos() {
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <div>
                 <p className="font-bold text-foreground">Checkout Seguro</p>
-                <p className="text-xs text-muted-foreground">Assim que a compra for aprovada, você será levado ao Dashboard PRO.</p>
+                <p className="text-xs text-muted-foreground">
+                  Use o e-mail <strong className="text-foreground">{userEmail || "da sua conta"}</strong> na compra para liberar o PRO automaticamente.
+                </p>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setCheckoutOpen(false)} aria-label="Fechar">
                 <X className="h-5 w-5" />
               </Button>
             </div>
-            <iframe src={CAKTO_URLS[selectedPlan]} title="Checkout Cakto" className="min-h-0 flex-1 border-0" allow="payment" />
+            <iframe src={checkoutUrl} title="Checkout Cakto" className="min-h-0 flex-1 border-0" allow="payment" />
             <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-2">{checkingPayment && <Loader2 className="h-3.5 w-3.5 animate-spin" />} Verificando pagamento automaticamente</span>
               <Button size="sm" variant="outline" onClick={() => navigate("/dashboard")}>Já sou PRO</Button>
