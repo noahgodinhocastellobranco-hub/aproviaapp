@@ -47,7 +47,7 @@ serve(async (req) => {
             from: "AprovI.A <noreply@aprovia.online>",
             to: [email],
             reply_to: "suporteaprovia@gmail.com",
-            subject: `Código para trocar sua senha: ${generated}`,
+            subject: "Redefinição de senha - AprovI.A",
             html: html(generated),
             text: textBody(generated),
             headers: { "X-Entity-Ref-ID": `reset-${profile.id}-${Date.now()}` },

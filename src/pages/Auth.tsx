@@ -210,6 +210,12 @@ export default function Auth() {
                   <p className="text-sm text-muted-foreground">Código enviado para</p>
                   <p className="font-bold text-foreground">{email}</p>
                 </div>
+                <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-foreground">
+                  <p className="font-bold">⚠️ Não achou o email?</p>
+                  <p className="mt-1 text-muted-foreground">
+                    Ele pode ter caído na <strong>caixa de spam</strong> ou em <strong>Promoções</strong>. Marque como “Não é spam” para receber os próximos na caixa principal.
+                  </p>
+                </div>
                 <div className="flex justify-center">
                   <InputOTP maxLength={4} value={code} onChange={setCode}>
                     <InputOTPGroup>

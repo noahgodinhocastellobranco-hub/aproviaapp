@@ -88,7 +88,7 @@ serve(async (req) => {
             from: "AprovI.A <noreply@aprovia.online>",
             to: [recipient],
             reply_to: "suporteaprovia@gmail.com",
-            subject: `Seu código AprovI.A: ${generated}`,
+            subject: "Confirmação de acesso - AprovI.A",
             html: emailHtml(generated, type),
             text: emailText(generated, type),
             headers: { "X-Entity-Ref-ID": `otp-${userId}-${Date.now()}` },
