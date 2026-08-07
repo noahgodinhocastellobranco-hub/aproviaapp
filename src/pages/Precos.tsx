@@ -41,12 +41,15 @@ export default function Precos() {
       setIsLoggedIn(!!user);
       if (!user) return;
 
+      setUserEmail(user.email || "");
+
       const { data: profile } = await supabase
         .from("profiles")
-        .select("is_premium")
+        .select("is_premium,nome")
         .eq("id", user.id)
         .maybeSingle();
 
+      setUserName(profile?.nome || "");
       if (profile?.is_premium) {
         setIsPremium(true);
         if (!checkoutOpen && searchParams.get("checkout") !== "1") navigate("/dashboard", { replace: true });
