@@ -92,6 +92,13 @@ export default function Precos() {
     setCheckoutOpen(true);
   };
 
+  const checkoutUrl = (() => {
+    const url = new URL(CAKTO_URLS[selectedPlan]);
+    if (userEmail) url.searchParams.set("email", userEmail);
+    if (userName) url.searchParams.set("name", userName);
+    return url.toString();
+  })();
+
   return (
     <main className="min-h-screen bg-background px-4 py-6">
       <button
