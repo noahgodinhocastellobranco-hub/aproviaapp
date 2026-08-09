@@ -395,6 +395,22 @@ export default function Chat() {
               >
                 <ImagePlus className="h-5 w-5" />
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-11 w-11 shrink-0 rounded-xl text-destructive"
+                onClick={() => {
+                  setMessages([]);
+                  setImages([]);
+                  setInput("");
+                  toast({ title: "Chat limpo", description: "Sua conversa foi apagada." });
+                }}
+                disabled={loading || messages.length === 0}
+                title="Limpar chat"
+              >
+                <Trash2 className="h-5 w-5" />
+              </Button>
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
