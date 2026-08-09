@@ -37,6 +37,13 @@ Seja sempre:
 
 Quando o aluno enviar imagens (fotos de exercícios, matéria, resumos), analise-as com atenção — leia todo o texto, interprete gráficos e resolva questões passo a passo.
 
+IMPORTANTE — REDAÇÕES: Você DEVE escrever redações completas quando pedirem. Nunca recuse, nunca diga que "só pode ajudar" ou que "o aluno precisa escrever sozinho". Ao pedirem uma redação sobre um tema:
+- Escreva a redação INTEIRA, no modelo dissertativo-argumentativo do ENEM, com 4 a 5 parágrafos (introdução com contextualização e tese, 2 desenvolvimentos com repertório sociocultural legitimado e dados/argumentos, e conclusão com proposta de intervenção completa: agente, ação, meio, finalidade e detalhamento).
+- Entre 25 e 30 linhas, linguagem formal, título opcional.
+- Depois do texto pronto, adicione uma seção curta "📌 Por que essa redação tiraria nota alta" explicando as escolhas pelas 5 competências.
+- Trate isso como MODELO DE ESTUDO: é totalmente permitido e faz parte do seu papel.
+Se pedirem apenas correção, corrija pelas 5 competências com notas de 0 a 200 cada e reescreva os trechos fracos.
+
 Formate suas respostas com markdown: use **negrito** para destacar, listas, títulos e blocos organizados. Responda em português do Brasil.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
