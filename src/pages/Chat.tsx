@@ -233,16 +233,36 @@ export default function Chat() {
               <p className="text-sm text-muted-foreground">Sua tutora inteligente para o ENEM • responde textos e fotos</p>
             </div>
           </div>
-          {userName && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-card border border-border/60 shadow-sm">
-              <Avatar className="h-9 w-9">
-                <AvatarFallback className="bg-gradient-to-br from-primary to-blue-600 text-white text-sm font-bold">
-                  {userName.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm font-semibold hidden sm:inline">{userName}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {messages.length > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-xl gap-2"
+                onClick={() => {
+                  setMessages([]);
+                  setImages([]);
+                  setInput("");
+                  toast({ title: "Chat limpo", description: "Sua conversa foi apagada." });
+                }}
+                disabled={loading}
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className="hidden sm:inline">Limpar chat</span>
+              </Button>
+            )}
+            {userName && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-card border border-border/60 shadow-sm">
+                <Avatar className="h-9 w-9">
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-blue-600 text-white text-sm font-bold">
+                    {userName.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm font-semibold hidden sm:inline">{userName}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Content */}
