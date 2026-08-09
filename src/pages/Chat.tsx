@@ -14,6 +14,7 @@ import {
   Brain,
   PenLine,
   ListChecks,
+  Trash2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
