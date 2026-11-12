@@ -101,9 +101,6 @@ export default function Index() {
       <section className="px-4 pb-12 pt-7 sm:px-6 lg:pb-16">
         <div className="mx-auto max-w-7xl text-center">
           <div className="mb-6 flex justify-center">
-            <Badge variant="outline" className="border-destructive/30 bg-destructive/10 px-5 py-2 text-destructive">⚡ ENEM 2026 está chegando — comece hoje</Badge>
-          </div>
-          <div className="mb-6 flex justify-center">
             <Brain className="h-24 w-24 text-primary sm:h-32 sm:w-32" style={{ animation: "logo-float 3s ease-in-out infinite, logo-glow 3s ease-in-out infinite" }} />
           </div>
           <h1 className="mx-auto max-w-5xl text-4xl font-black leading-tight text-foreground sm:text-6xl lg:text-7xl">
